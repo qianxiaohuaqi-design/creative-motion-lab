@@ -38,4 +38,10 @@ html, body { margin: 0; min-height: 100%; }
   text-shadow: 0 3px 20px rgba(255,255,255,0.38);
 }
 
+/* 每个单词占据一个独立的盒子，便于后续 transform 动画 */
+.word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .instruction { font-size: 0.9rem; opacity: 0.8; }
