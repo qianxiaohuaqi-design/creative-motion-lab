@@ -10,4 +10,4 @@
 6. 不要求为练习使用昂贵软件，先用 VS Code + Chrome + 原生 HTML/CSS/JavaScript 起步。
 7. 复刻用于学习，公开发布时注意原创素材、标注灵感和相关版权许可。
 
-当前作品入口：`stage-01-recreations/00-cloud-typography/`。
+当前作品入口：`projects/creative-coding/00-cloud-typography/`。

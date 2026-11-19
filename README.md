@@ -17,7 +17,13 @@
 6. **原创作品集**：艺术短片、产品宣传、游戏过场。
 
 ## 当前作品
-- [00 · Cloud Typography — 风会把字吹成云](stage-01-recreations/00-cloud-typography/README.md)：从思花《时间尽头的无序之书》的文字无序化理念出发，改编为天空蓝背景、云质感文字、微风扰动、点击消散的互动练习。
+- [00 · Cloud Typography — 风会把字吹成云](projects/creative-coding/00-cloud-typography/README.md)：从思花《时间尽头的无序之书》的文字无序化理念出发，改编为天空蓝背景、云质感文字、微风扰动、点击消散的互动练习。
 - 后续计划：《人停鱼行》《夏天的手心》《春枝》。
 
 > 当前工作重点：先讨论并确定体验，再一步步实现；不要把草案当成最终美术方案。
+
+## 项目整理方式
+- [projects/](projects/)：所有作品与实验的总目录。
+- [projects/creative-coding/](projects/creative-coding/)：代码动画与互动动态艺术；每个作品独立文件夹。
+- [projects/ai-video/](projects/ai-video/)：未来 AI 视频生成与混合制作；每个作品独立文件夹。
+- 学习笔记、设计草案和成品都尽量保存在对应项目中。
