@@ -1,14 +1,34 @@
 /**
- * L00 学习起点。
- *
- * 请先打开浏览器控制台，确认这段脚本已加载。
- * 动画、事件和粒子效果暂不预先写好：这些是后续练习的核心。
+ * Lesson 01 — 将一句话拆成可独立控制的单词元素。
+ * 以后可以为每个 span.word 添加微风、点击和云雾消散动画。
  */
 
 const cloudText = document.getElementById("cloud-text");
-console.log("Creative Motion Lab: page ready", cloudText?.textContent);
 
-// TODO L01：如何把一句话拆成多个单词，并为每个单词创建一个元素？
-// TODO L02：如何给单词绑定 click 事件，让它先缓缓淡出？
-// TODO L03：如何使用时间 t 更新位置，而不是一次性改变坐标？
-// TODO L04-L05：如何让文字真正分解成随风漂浮的云雾粒子？
+if (cloudText) {
+  // 读取原始标题，去除两端空格，再根据连续空白拆成单词
+  const sentence = cloudText.textContent.trim();
+  const words = sentence.split(/\s+/);
+
+  // 清空原先作为整体的文字
+  cloudText.textContent = "";
+
+  // 为每个单词创建一个独立的 span
+  words.forEach((word, index) => {
+    const span = document.createElement("span");
+    span.className = "word";
+    span.textContent = word;
+    cloudText.append(span);
+
+    // 单词之间用文本节点添加空格，允许正常换行
+    if (index < words.length - 1) {
+      cloudText.append(" ");
+    }
+  });
+
+  console.log("Cloud Typography | Lesson 01:", words.length, "words created");
+}
+
+// TODO L02：给每个单词绑定 click 事件，练习淡出 / 重新出现。
+// TODO L03：使用时间和连续噪声，模拟云朵随风轻轻漂移。
+// TODO L04-L05：通过 Canvas 粒子，让文字真正变成云雾并重新凝聚。
