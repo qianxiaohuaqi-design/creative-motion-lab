@@ -15,10 +15,12 @@
     <div class="cloud-bank cloud-bank--far" aria-hidden="true"></div>
     <div class="cloud-bank cloud-bank--near" aria-hidden="true"></div>
     <div class="air-haze" aria-hidden="true"></div>
+
     <header class="masthead">
-      <span class="brand"><span class="brand-mark" aria-hidden="true">✳</span> CREATIVE MOTION LAB <span class="brand-divider">/</span> EXPERIMENT 00</span>
+      <span class="brand"><span class="brand-mark" aria-hidden="true">✳</span> CREATIVE MOTION LAB <span class="divider">/</span> EXPERIMENT 00</span>
       <span class="edition">A STUDY OF WORDS, WIND AND SPACE</span>
     </header>
+
     <section class="composition" aria-labelledby="cloud-text">
       <div class="text-plane">
         <p class="eyebrow">A LETTER WRITTEN IN THE SKY</p>
@@ -26,13 +28,16 @@
         <p class="subtitle">Even the gentlest wind can change a story.</p>
       </div>
     </section>
+
     <canvas id="mist-canvas" aria-hidden="true"></canvas>
+    <div id="wind-halo" class="wind-halo" aria-hidden="true"></div>
+
     <footer class="bottom-bar">
-      <div class="hint"><span class="hint-symbol" aria-hidden="true">✧</span><span>轻点字母，让云随风散去 · 轻点空白处，吹起一阵风</span></div>
+      <div class="hint"><span class="hint-symbol" aria-hidden="true">✧</span> 轻点字母吹散 · 按住并拖动，亲手在天空里制造一阵风</div>
       <div class="controls">
         <label for="wind-range">WIND <output id="wind-value">03</output></label>
         <input id="wind-range" type="range" min="0" max="6" step="1" value="3" aria-label="风力强度">
-        <label for="chaos-range">DISORDER <output id="chaos-value">70</output></label>
+        <label for="chaos-range">DISORDER <output id="chaos-value">68</output></label>
         <input id="chaos-range" type="range" min="0" max="100" step="5" value="70" aria-label="失序程度">
         <button id="gust-button" type="button">吹散整段 <span aria-hidden="true">↗</span></button>
         <button id="reset-button" type="button">重新开始 <span aria-hidden="true">↺</span></button>
