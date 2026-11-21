@@ -1,6 +1,7 @@
 "$schema" = "https://open-api.netlify.com/netlify.schema.json"
 
-# Cloud Typography 预览站
-# 仓库包含多个独立项目，目前本网站只发布云间来信。
+# Cloud Typography 的独立在线预览
+# 仓库含有学习笔记，构建时仅复制可公开的网页文件到 dist。
 [build]
-  publish = "projects/creative-coding/00-cloud-typography"
+  command = "mkdir -p dist && cp projects/creative-coding/00-cloud-typography/index.html projects/creative-coding/00-cloud-typography/style.css projects/creative-coding/00-cloud-typography/script.js dist/"
+  publish = "dist"
