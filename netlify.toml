@@ -1,6 +1,7 @@
 "$schema" = "https://open-api.netlify.com/netlify.schema.json"
 
-# 当前站点仅发布 Luci 的 Cloud Typography 代码，不发布 shared 文档或其他 AI 的作品。
+# Three independent artist workspaces under one Netlify site.
+# / is Luci's page; /luci/, /gemini/, /deepseek/ each show their own implementation.
 [build]
-  command = "mkdir -p dist && cp agents/luci/projects/cloud-typography/index.html agents/luci/projects/cloud-typography/style.css agents/luci/projects/cloud-typography/script.js dist/"
+  command = "mkdir -p dist/luci dist/gemini dist/deepseek && cp agents/luci/projects/cloud-typography/index.html agents/luci/projects/cloud-typography/style.css agents/luci/projects/cloud-typography/script.js dist/ && cp agents/luci/projects/cloud-typography/index.html agents/luci/projects/cloud-typography/style.css agents/luci/projects/cloud-typography/script.js dist/luci/ && cp agents/gemini/projects/cloud-typography/index.html agents/gemini/projects/cloud-typography/style.css agents/gemini/projects/cloud-typography/script.js dist/gemini/ && cp agents/deepseek/projects/cloud-typography/index.html agents/deepseek/projects/cloud-typography/style.css agents/deepseek/projects/cloud-typography/script.js dist/deepseek/"
   publish = "dist"

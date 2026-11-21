@@ -1,259 +1,272 @@
 /**
- * Cloud Typography — complete interactive motion study.
- * No external libraries. HTML spans keep the words accessible; a Canvas overlay
- * draws transient cloud particles so that the original DOM layout never shifts.
+ * Cloud Typography v1.1 | Creative Motion Lab
+ * Every letter is an independent DOM object. No build tools or external libraries.
+ * Coherent time-based wind gradually disrupts the paragraph; clicking a letter
+ * turns its sampled glyph into drifting, fading cloud-wisps forever (until reset).
  */
 (() => {
   'use strict';
-  const headline = document.getElementById('cloud-text');
+  const sky = document.getElementById('sky');
+  const paragraph = document.getElementById('cloud-text');
   const canvas = document.getElementById('mist-canvas');
-  const slider = document.getElementById('wind-range');
+  const windRange = document.getElementById('wind-range');
+  const chaosRange = document.getElementById('chaos-range');
   const windValue = document.getElementById('wind-value');
-  const resetButton = document.getElementById('reset-button');
-  const liveStatus = document.getElementById('live-status');
-  if (!headline || !canvas || !slider || !resetButton) return;
-
-  const ctx = canvas.getContext('2d', { alpha: true });
+  const chaosValue = document.getElementById('chaos-value');
+  const reset = document.getElementById('reset-button');
+  const gustButton = document.getElementById('gust-button');
+  const status = document.getElementById('live-status');
+  if (!sky || !paragraph || !canvas || !windRange || !chaosRange || !reset) return;
+  const ctx = canvas.getContext('2d', {alpha: true});
   if (!ctx) return;
-
-  const preferReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const words = [];
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const original = paragraph.textContent.trim().replace(/\s+/g, ' ');
+  const letters = [];
   const effects = new Map();
-  const originalText = headline.textContent.trim();
-  const parts = originalText.split(/\s+/).filter(Boolean);
-  const start = performance.now();
-  let wind = Number(slider.value);
-  let begin = start;
-  let lastTime = start;
-  let frame = 0;
-  let dpr = 1;
-  let viewportWidth = window.innerWidth;
-  let viewportHeight = window.innerHeight;
+  const maskCache = new Map();
+  const pseudo = n => { const t = Math.sin(n * 81.271 + 17.33) * 43758.5453; return t - Math.floor(t); };
+  const clamp = (n,a,b) => Math.min(b, Math.max(a,n));
+  const ease = n => { n = clamp(n,0,1); return n*n*(3-2*n); };
+  let wind = Number(windRange.value);
+  let disorder = Number(chaosRange.value)/100;
+  let begin = performance.now(), start = begin, lastFrame = begin;
+  let canvasWidth = 0, canvasHeight = 0, dpr = 1;
+  let rafId = 0;
+  let gusting = false;
+  let spoken = 0;
 
-  const TIMING = Object.freeze({ disperse: 1550, pause: 570, return: 1660 });
-  const totalDuration = TIMING.disperse + TIMING.pause + TIMING.return;
-  const ease = t => { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); };
-  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
-  const pseudo = n => { const a = Math.sin(n * 127.1 + 78.23) * 43758.5453; return a - Math.floor(a); };
-
-  function createWords() {
-    headline.textContent = '';
-    parts.forEach((text, index) => {
+  function buildLetters() {
+    paragraph.textContent = '';
+    original.split(' ').forEach((wordText, wi, all) => {
       const word = document.createElement('span');
       word.className = 'word';
-      word.setAttribute('role', 'button');
-      word.tabIndex = 0;
-      word.setAttribute('aria-label', `让 ${text} 化作云朵并重新凝聚`);
-      word.dataset.word = text;
-      word.style.animationDelay = `${index * 0.14}s`;
-      const chars = [];
-      [...text].forEach((letter, i) => {
-        const char = document.createElement('span');
-        char.className = 'char';
-        char.dataset.char = letter;
-        char.textContent = letter;
-        char.setAttribute('aria-hidden', 'true');
-        word.append(char);
-        chars.push(char);
-      });
-      word.addEventListener('click', () => dissolve(word));
-      word.addEventListener('keydown', ev => {
-        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); dissolve(word); }
-      });
-      headline.append(word);
-      if (index < parts.length - 1) headline.append(' ');
-      words.push({ element: word, chars, text, index });
+      for (const symbol of wordText) {
+        const node = document.createElement('span');
+        node.className = 'letter';
+        node.textContent = symbol;
+        node.dataset.char = symbol;
+        node.dataset.index = String(letters.length);
+        node.tabIndex = 0;
+        node.setAttribute('role','button');
+        node.setAttribute('aria-label', `吹散字母 ${symbol}`);
+        const item = {element:node,index:letters.length, gone:false, x:0,y:0,randX:(pseudo(letters.length*1.7)-.5)*2,randY:(pseudo(letters.length*2.3)-.5)*2};
+        letters.push(item);
+        word.append(node);
+      }
+      paragraph.append(word);
+      if (wi < all.length-1) paragraph.append(document.createTextNode(' '));
     });
+    measure();
   }
 
+  function measure() {
+    for (const item of letters) {
+      // Width/height are layout dimensions, unaffected by CSS transform.
+      const el = item.element;
+      item.x = el.offsetLeft + el.offsetWidth/2;
+      item.y = el.offsetTop + el.offsetHeight/2;
+    }
+  }
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 1.75);
-    viewportWidth = window.innerWidth;
-    viewportHeight = window.innerHeight;
-    canvas.width = Math.round(viewportWidth * dpr);
-    canvas.height = Math.round(viewportHeight * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    canvasWidth = window.innerWidth; canvasHeight=window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1,1.65);
+    canvas.width = Math.max(1,Math.round(canvasWidth*dpr));
+    canvas.height = Math.max(1,Math.round(canvasHeight*dpr));
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    measure();
   }
 
-  function sprite(radius) {
-    const size = 64;
-    const c = document.createElement('canvas');
-    c.width = c.height = size;
-    const g = c.getContext('2d');
-    const grad = g.createRadialGradient(32,32,0,32,32,31);
-    grad.addColorStop(0,'rgba(255,255,255,1)');
-    grad.addColorStop(.14,'rgba(255,255,255,.91)');
-    grad.addColorStop(.38,'rgba(255,255,255,.42)');
-    grad.addColorStop(.75,'rgba(255,255,255,.08)');
-    grad.addColorStop(1,'rgba(255,255,255,0)');
-    g.fillStyle = grad;
-    g.fillRect(0,0,size,size);
+  function makeSprite(wide=false) {
+    const c=document.createElement('canvas'); c.width=128; c.height=128;
+    const g=c.getContext('2d');
+    if (wide) {
+      g.save(); g.translate(64,64); g.scale(1.6,.58);
+      const grad=g.createRadialGradient(0,0,0,0,0,48);
+      grad.addColorStop(0,'rgba(247,249,246,.80)');
+      grad.addColorStop(.3,'rgba(247,249,246,.33)');
+      grad.addColorStop(.7,'rgba(240,244,241,.10)');
+      grad.addColorStop(1,'rgba(237,243,240,0)');
+      g.fillStyle=grad; g.fillRect(-64,-64,128,128);g.restore();
+    } else {
+      const grad=g.createRadialGradient(64,64,1,64,64,62);
+      grad.addColorStop(0,'rgba(250,251,248,.91)');
+      grad.addColorStop(.17,'rgba(251,251,247,.62)');
+      grad.addColorStop(.44,'rgba(242,246,241,.28)');
+      grad.addColorStop(.77,'rgba(236,243,240,.075)');
+      grad.addColorStop(1,'rgba(236,243,240,0)');
+      g.fillStyle=grad;g.fillRect(0,0,128,128);
+    }
     return c;
   }
-  const softDot = sprite();
+  const cloudDot=makeSprite(), cloudWisp=makeSprite(true);
 
-  // Sample pixel opacity from an offscreen text mask to turn an actual word into particles.
-  function sampleText(word) {
-    const rect = word.getBoundingClientRect();
-    const style = window.getComputedStyle(headline);
-    const layer = document.createElement('canvas');
-    const scale = 1.3;
-    const w = Math.max(1,Math.ceil(rect.width * scale));
-    const h = Math.max(1,Math.ceil(rect.height * scale));
-    layer.width = w; layer.height = h;
-    const g = layer.getContext('2d', { willReadFrequently: true });
-    if (!g) return [];
-    g.scale(scale,scale);
-    g.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-    g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillStyle = 'white';
-    g.fillText(word.dataset.word, rect.width / 2, rect.height / 2 - 1);
-    const pixels = g.getImageData(0,0,w,h).data;
-    const candidates = [];
-    const step = 4;
-    for (let y = 0; y < h; y += step) {
-      for (let x = 0; x < w; x += step) {
-        const alpha = pixels[(y*w+x)*4+3];
-        if (alpha > 66 && pseudo((x + y*37)*.731) > .16) candidates.push({x:x/scale,y:y/scale});
+  function sampleGlyph(item, limit) {
+    const element=item.element;
+    const rect=element.getBoundingClientRect();
+    const style=getComputedStyle(element);
+    const fontKey=`${element.textContent}|${style.fontFamily}|${style.fontSize}|${style.fontWeight}|${Math.round(rect.width)}x${Math.round(rect.height)}`;
+    let template=maskCache.get(fontKey);
+    if (!template) {
+      const scale=1.25, w=Math.max(5,Math.ceil(rect.width*scale)),h=Math.max(5,Math.ceil(rect.height*scale));
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      const g=c.getContext('2d',{willReadFrequently:true});
+      g.scale(scale,scale);
+      g.fillStyle='white';
+      g.font=`${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      g.textAlign='center';g.textBaseline='middle';
+      g.fillText(element.textContent,rect.width/2,rect.height/2 - rect.height*.01);
+      const data=g.getImageData(0,0,w,h).data;
+      const points=[];
+      for(let y=0;y<h;y+=3)for(let x=0;x<w;x+=3){
+        if(data[(y*w+x)*4+3]>90)points.push({x:x/scale-rect.width/2,y:y/scale-rect.height/2});
       }
+      template=points;
+      maskCache.set(fontKey,template);
     }
-    // Spread samples over the entire glyph rather than using only the left side.
-    const cap = Math.min(340, Math.max(125, Math.round(rect.width * .72)));
-    if (candidates.length > cap) {
-      for (let i = candidates.length-1; i>0; i--) {
-        const j = Math.floor(pseudo(i*1.183+rect.width)* (i+1));
-        [candidates[i], candidates[j]]=[candidates[j], candidates[i]];
-      }
-      candidates.length = cap;
-    }
-    const strength = .35 + wind / 5;
-    const droplets = candidates.map((pt,i) => {
-      const random = pseudo(i * 7.531 + rect.left * .07);
-      const random2 = pseudo(i * 11.23 + rect.top * .13);
-      const spread = 40 + random * (90 + 75 * strength);
-      const theta = (random - .5) * 2.9 - .3;
-      return {
-        x0: rect.left + pt.x,
-        y0: rect.top + pt.y,
-        dx: Math.cos(theta)*spread + 34*strength,
-        dy: Math.sin(theta)*spread*.7 - 31 - random2*42,
-        radius: 3.4 + random2*8.0,
-        phase: random*6.283,
-        alpha: .38 + random*.54
-      };
-    });
-    // A second, broader low-opacity layer forms soft cloud wisps around the glyph.
-    // These are still generated from the real character mask, not random background snow.
-    const vapor = droplets.filter((_, i) => i % 5 === 0).map((p, i) => ({
-      ...p, dx: p.dx * .77, dy: p.dy * .83,
-      radius: 19 + pseudo(i*9.7)*19,
-      alpha: .10 + pseudo(i*2.17)*.09
-    }));
-    return [...vapor, ...droplets];
+    if (!template.length) template=[{x:0,y:0}];
+    const selected=[];
+    const count=Math.min(limit,template.length);
+    const stride=template.length/count;
+    for(let j=0;j<count;j++)selected.push(template[Math.floor(j*stride)]);
+    return {points:selected,rect};
   }
 
-  function dissolve(word) {
-    if (effects.has(word)) return; // Per-word lock; other words remain interactive.
-    if (preferReducedMotion.matches) {
-      word.style.opacity = '.17';
-      word.style.filter = 'blur(3px)';
-      word.setAttribute('aria-disabled', 'true');
-      const id = { reduced: true };
-      effects.set(word, id);
-      window.setTimeout(() => {
-        if (effects.get(word) !== id) return;
-        word.style.opacity = ''; word.style.filter = '';
-        word.removeAttribute('aria-disabled');
-        effects.delete(word);
-      }, 350);
+  function dissolve(item, options={}) {
+    if(item.gone || effects.has(item.index))return;
+    const now=performance.now();
+    if(reduced.matches){
+      item.gone=true; item.element.classList.add('gone'); item.element.tabIndex=-1;
       return;
     }
-    const particles = sampleText(word);
-    if (!particles.length) return;
-    effects.set(word, { time: performance.now(), particles });
-    word.classList.add('dispersing');
-    word.setAttribute('aria-disabled','true');
-    liveStatus.textContent = `${word.dataset.word} 化作云朵，正在重新凝聚。`;
+    const particles=[];
+    const {points,rect}=sampleGlyph(item,options.mass?20:65);
+    const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+    const seed=item.index*12.48+3;
+    for(let i=0;i<points.length;i++){
+      const p=points[i];
+      const rand=pseudo(i*.713+seed),r2=pseudo(i*1.91+seed),r3=pseudo(i*3.21+seed);
+      const v=.5+rand*1.3;
+      particles.push({
+        x0:cx+p.x,y0:cy+p.y,
+        drift:(75+rand*180)*(0.7+wind*.20)*v,
+        rise:(r2-.48)*(90+disorder*160),
+        curl:(r3-.5)*55,phase:rand*6.283,
+        radius:4.5+r2*8.4,
+        alpha:.27+r3*.45,
+        speed:.70+r2*.48,
+        wisp:r3>.45
+      });
+    }
+    // Sparse, larger cloud wisps keep the motion closer to vapor than glitter.
+    for(let i=0;i<Math.max(6,Math.floor(points.length*.26));i++){
+      const source=particles[(i*7)%Math.max(1,particles.length)];
+      if(!source)continue;
+      particles.push({...source, radius:21+pseudo(i+seed)*24,alpha:.09+pseudo(i*.6+seed)*.09,drift:source.drift*1.15,wisp:true});
+    }
+    effects.set(item.index,{item,start:now+(options.delay||0),particles,duration:2100+pseudo(seed)*1050,hidden:false});
   }
 
-  function drawParticles(now) {
-    ctx.clearRect(0,0,viewportWidth,viewportHeight);
-    for (const [word, effect] of effects) {
-      if (effect.reduced) continue;
-      const elapsed = now - effect.time;
-      if (elapsed >= totalDuration) {
-        word.classList.remove('dispersing');
-        word.removeAttribute('aria-disabled');
-        effects.delete(word);
-        continue;
+  function scatterAll() {
+    if(gusting)return;
+    gusting=true;
+    const visible=letters.filter(x=>!x.gone && !effects.has(x.index));
+    visible.forEach((item,i)=>dissolve(item,{mass:true,delay:i*24+pseudo(item.index)*250}));
+    status.textContent='一阵风穿过文字，字母正向天空各处散去。';
+    window.setTimeout(()=>{gusting=false;},700);
+  }
+
+  paragraph.addEventListener('click',ev=>{
+    const el=ev.target.closest('.letter');
+    if(!el)return;
+    const item=letters[Number(el.dataset.index)];
+    dissolve(item);
+    const now=performance.now();
+    if(now-spoken>700){status.textContent=`字母 ${el.dataset.char} 被风吹走，不会自动回来。`;spoken=now;}
+    ev.stopPropagation();
+  });
+  paragraph.addEventListener('keydown',ev=>{
+    if(ev.key!=='Enter' && ev.key!==' ')return;
+    const el=ev.target.closest('.letter');
+    if(!el)return;
+    ev.preventDefault();ev.stopPropagation();
+    const item=letters[Number(el.dataset.index)];
+    dissolve(item);
+  });
+  gustButton.addEventListener('click', scatterAll);
+  sky.addEventListener('click',ev=>{
+    if(ev.target.closest('.letter, .masthead, .bottom-bar'))return;
+    scatterAll();
+  });
+
+  function drawClouds(now) {
+    ctx.clearRect(0,0,canvasWidth,canvasHeight);
+    for(const [key,effect] of effects) {
+      const age=now-effect.start;
+      if(age<0)continue;
+      if(!effect.hidden){
+        effect.hidden=true;
+        effect.item.gone=true;
+        effect.item.element.classList.add('gone');
+        effect.item.element.tabIndex=-1;
       }
-      const out = elapsed < TIMING.disperse;
-      const hold = elapsed >= TIMING.disperse && elapsed < TIMING.disperse + TIMING.pause;
-      const progress = out ? ease(elapsed/TIMING.disperse) : hold ? 1 : 1-ease((elapsed-TIMING.disperse-TIMING.pause)/TIMING.return);
-      // Converging opacity rises as particles approach their original letter pixels.
-      const opacity = out ? 1 - .55*progress : hold ? .45 : .40 + .60*(1-progress);
-      for (const p of effect.particles) {
-        const waver = Math.sin(now*.00065 + p.phase)*6*progress;
-        const cx = p.x0 + p.dx*progress + waver;
-        const cy = p.y0 + p.dy*progress + Math.cos(now*.00043+p.phase)*5*progress;
-        const size = p.radius*(.83 + .6*progress);
-        ctx.globalAlpha = p.alpha*opacity;
-        ctx.drawImage(softDot,cx-size,cy-size,size*2,size*2);
+      const t=age/effect.duration;
+      if(t>=1){effects.delete(key);continue;}
+      const progression=ease(t);
+      const windShift=progression*(.50+wind*.20);
+      const haze=Math.pow(1-progression,.68);
+      for(const p of effect.particles){
+        const px=p.x0+p.drift*windShift + Math.sin(now*.0012+p.phase+progression*4)*p.curl*progression;
+        const py=p.y0+p.rise*progression+Math.cos(now*.0009+p.phase)*22*progression;
+        const radius=p.radius*(1+progression*(p.wisp?2.25:1.25));
+        ctx.globalAlpha=p.alpha*haze*(p.wisp?.76:1);
+        ctx.drawImage(p.wisp?cloudWisp:cloudDot,px-radius,py-radius,radius*2,radius*2);
       }
     }
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha=1;
   }
 
   function animate(now) {
-    // Keep movement time based, not frame based, so the same effect survives 60/120Hz.
-    const dt = clamp(now-lastTime,0,60); lastTime=now;
-    frame++;
-    const t = now-begin;
-    const chaos = ease(Math.min(1,t/36000));
-    const strength = wind / 2;
-    if (!preferReducedMotion.matches && strength > 0) {
-      words.forEach(({element,chars,index}) => {
-        if (effects.has(element)) return; // Keep source pixels still during dispersal.
-        const shared = Math.sin(t*.00018+.4)*5.2;
-        const dx = (shared + Math.sin(t*.00031+index*.62)*3.5 + Math.sin(t*.0001+index*2.7)*chaos*9) * strength;
-        const dy = (Math.cos(t*.00023+index*.41)*3 + Math.sin(t*.00013+index*.8)*chaos*5.5)*strength;
-        const rotation = (Math.sin(t*.00015+index*.53)*.8+chaos*Math.sin(t*.00009+index*1.3)*2)*strength;
-        element.style.transform=`translate3d(${dx.toFixed(2)}px,${dy.toFixed(2)}px,0) rotate(${rotation.toFixed(2)}deg)`;
-        chars.forEach((char,j) => {
-          const x=(Math.sin(t*.00026+index*.58+j*.42)*1.2 + chaos*Math.sin(index*5.6+j*2.37+t*.00017)*3.2)*strength;
-          const y=(Math.cos(t*.00029+j*.33+index*.3)*1.1 + chaos*Math.cos(j*2.47+index+t*.00012)*2.5)*strength;
-          const a=(Math.sin(t*.00022+j*.36)*.35 + chaos*Math.sin(j*2.9+index)*2.5)*strength;
-          char.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) rotate(${a.toFixed(2)}deg)`;
+    if(!document.hidden){
+      const time=now-begin;
+      const phase=clamp(time/26000,0,1);
+      const entropy=(.08+.92*ease(phase))*disorder;
+      // On narrow screens, keep independent drift from overwhelming the smaller glyphs.
+      const mobileScale=clamp(canvasWidth/950,.30,1);
+      const breeze=(wind/4)*mobileScale;
+      if(reduced.matches){
+        for(const x of letters)if(!x.gone)x.element.style.transform='';
+      }else{
+        letters.forEach((item)=>{
+          if(item.gone || effects.has(item.index))return;
+          const z=item.index;
+          const px=item.x*.012, py=item.y*.011;
+          // Nearby letters share the same rolling gust, while each letter has its own bias.
+          const shared=Math.sin(time*.00036+px*.65+py*.28)*14 + Math.sin(time*.00012+px*.42)*12;
+          const local=Math.sin(time*.00051+px+z*.13)*11+Math.cos(time*.00024+py+z*.09)*10;
+          const dx=(shared*.58+local*.44+(item.randX*75+Math.sin(time*.00028+z*.23)*24)*entropy)*breeze;
+          const dy=(Math.cos(time*.00028+px*.4)*8 + Math.sin(time*.0003+z*.18)*8 + (item.randY*65+Math.cos(time*.00023+z*.16)*22)*entropy)*breeze;
+          const angle=(Math.sin(time*.00026+z*.16)*2.2 + item.randX*29*entropy)*breeze;
+          item.element.style.transform=`translate3d(${dx.toFixed(2)}px,${dy.toFixed(2)}px,0) rotate(${angle.toFixed(2)}deg)`;
         });
-      });
-    } else {
-      words.forEach(({element,chars}) => {
-        element.style.transform=''; chars.forEach(char=>char.style.transform='');
-      });
+      }
+      if(effects.size)drawClouds(now);
     }
-    if (effects.size || frame%6===0) drawParticles(now);
-    requestAnimationFrame(animate);
+    lastFrame=now;
+    rafId=requestAnimationFrame(animate);
   }
 
-  slider.addEventListener('input', () => { wind=Number(slider.value); windValue.textContent=String(wind).padStart(2,'0'); });
-  resetButton.addEventListener('click', () => {
-    begin=performance.now();
-    effects.forEach((e,word)=>{
-      word.classList.remove('dispersing');
-      word.style.opacity=''; word.style.filter=''; word.removeAttribute('aria-disabled');
-    });
-    effects.clear(); ctx.clearRect(0,0,viewportWidth,viewportHeight);
-    liveStatus.textContent='天空已恢复初始状态。';
+  windRange.addEventListener('input',()=>{wind=Number(windRange.value);windValue.textContent=String(wind).padStart(2,'0');});
+  chaosRange.addEventListener('input',()=>{disorder=Number(chaosRange.value)/100;chaosValue.textContent=String(chaosRange.value).padStart(2,'0');});
+  reset.addEventListener('click',()=>{
+    effects.clear(); gusting=false; begin=performance.now();
+    for(const item of letters){item.gone=false;item.element.classList.remove('gone');item.element.tabIndex=0;item.element.style.transform='';}
+    ctx.clearRect(0,0,canvasWidth,canvasHeight);
+    status.textContent='文字重新开始排列。这是主动重置，并不是自动凝聚。';
   });
-  const refreshMotionMode = () => { begin=performance.now(); };
-  preferReducedMotion.addEventListener?.('change',refreshMotionMode);
   window.addEventListener('resize',resize,{passive:true});
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) lastTime=performance.now();
-  });
-
-  createWords();
+  reduced.addEventListener?.('change',()=>{begin=performance.now();});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)lastFrame=performance.now();});
+  buildLetters();
   resize();
-  windValue.textContent=String(wind).padStart(2,'0');
-  requestAnimationFrame(animate);
+  rafId=requestAnimationFrame(animate);
 })();

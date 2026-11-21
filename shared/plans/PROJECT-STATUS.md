@@ -1,39 +1,21 @@
-# 当前项目状态｜2026-11-21
+# Creative Motion Lab｜全局状态（2026-11-21）
 
-本文件区分已经提交的代码、设计目标和未完成的任务。
+## 共享创作需求
+Cloud Typography 最新要求为 **v2**，参见 shared/briefs/CLOUD-TYPOGRAPHY.md：更长段落、灰蓝低亮背景、每字母独立、明显连续风场、点击永久云雾消散、不自动复原。
 
-## Cloud Typography（Luci v1.0 七项核心功能已完成）
-- [x] 天空蓝渐变背景与白色文字排版
-- [x] 拆分五个独立单词
-- [x] 柔和白云质感字
-- [x] 微风漂浮与渐进失序
-- [x] 点击单词后 Canvas 云雾粒子消散
-- [x] 粒子重新凝聚为原词（方案 A）
-- [x] 基础响应式、重置、键盘操作与减少动画偏好
-- [x] 本地浏览器自动化测试通过
-- [ ] 用户主观视觉验收（非功能开发阻塞项）
+## 三位 AI
+| AI | 工作区 | 状态 | 预览 |
+|---|---|---|---|
+| Luci | agents/luci/projects/cloud-typography/ | v1.1 代码完成，本地 UI 测试通过；线上以 Netlify 部署为准 | https://reina-motion-lab.netlify.app/ |
+| Gemini | agents/gemini/projects/cloud-typography/ | 原始起始模板；尚未按新需求独立完成 | https://reina-motion-lab.netlify.app/gemini/ |
+| DeepSeek | agents/deepseek/projects/cloud-typography/ | 原始起始模板；尚未按新需求独立完成 | https://reina-motion-lab.netlify.app/deepseek/ |
 
-Luci 的完整源码、任务及测试记录：agents/luci/projects/cloud-typography/。
-Gemini 和 DeepSeek 当前仍为初始副本，尚无各自完成的动画。
+## 参考与长期学习
+- 学习路线：shared/plans/LEARNING-ROADMAP.md
+- 参考分析：shared/references/VIDEO-INDEX.md
+- 参考视频原件 MP4：不在 GitHub 中，其他 AI 如需逐帧分析应由用户单独提供。
+- 人停鱼行、夏天的手心、春枝：尚未开始独立工程。
+- AI 视频 / 产品宣传 / 3D 方向：仍在长期规划中。
 
-## 其他项目
-- 人停鱼行：参考视频有过会话内分析，尚未创建正式独立作品。
-- 夏天的手心：有参考分析，尚未开工。
-- 春枝：有参考分析，尚未开工。
-- AI 视频与产品动效：只有长期学习方向，尚未开工。
-
-## 素材完整性
-- GitHub 已保存项目文本与代码，但 **参考视频 MP4 原文件没有上传仓库**。
-- 参考作品的文件名、已知来源、所见画面及可能的技术思路记录在 shared/references/VIDEO-INDEX.md。
-- 原作者的软件、源代码和工程文件未确认。需要逐帧分析的 AI 必须另行取得原始视频文件，而不能仅依赖此摘要。
-
-## 合作规范
-- main 连接 Netlify 自动部署；其他 AI 尽量在 experiment/xxx 分支或本地副本工作。
-- 用 PR/变更摘要提交候选方案，用户验收后再合并 main。
-- 若新加图片、字体、代码模块，检查根目录 netlify.toml 的静态文件复制规则。
-
-## 三方状态
-- Luci：v1.0 的七项核心功能已经实现，本地验收通过并持续部署 Netlify。
-- Gemini：已复制相同起始代码，尚未独立制作动画。
-- DeepSeek：已复制相同起始代码，尚未独立制作动画。
-- 详细进度分别写在 agents/<ai>/STATUS.md 中。
+## 对比与发布
+三位 AI 仅修改各自 agents/<ai>/ 目录；共享规格和根部署配置由用户确认。root Netlify 发布 Luci，/gemini/ 和 /deepseek/ 是独立静态路径。同一 GitHub main 提交会触发 Netlify 重建，但互不覆盖目录。

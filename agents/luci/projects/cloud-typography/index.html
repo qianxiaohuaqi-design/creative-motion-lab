@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#82c6e9">
-  <meta name="description" content="Cloud Typography — 让文字化作云朵，随风消散与重聚的互动艺术实验。">
+  <meta name="theme-color" content="#648da8">
+  <meta name="description" content="Cloud Typography — letters caught by wind, scattered into clouds, never quite returning.">
   <title>Cloud Typography — 云间来信</title>
   <link rel="stylesheet" href="./style.css">
   <script src="./script.js" defer></script>
@@ -13,27 +13,29 @@
   <main class="sky" id="sky">
     <div class="atmosphere atmosphere--one" aria-hidden="true"></div>
     <div class="atmosphere atmosphere--two" aria-hidden="true"></div>
-    <div class="sun-glow" aria-hidden="true"></div>
+    <div class="veil" aria-hidden="true"></div>
 
     <header class="masthead">
       <div class="brand"><span class="brand-mark" aria-hidden="true">✳</span> CREATIVE MOTION LAB <span class="brand-divider">/</span> EXPERIMENT 00</div>
-      <span class="masthead-detail">AN INTERACTIVE SKY STUDY</span>
+      <span class="edition">AN EXPERIMENT IN LETTING GO — V1.1</span>
     </header>
 
     <section class="composition" aria-labelledby="cloud-text">
-      <p class="eyebrow">A LITTLE LETTER FROM THE SKY</p>
-      <h1 id="cloud-text">THE WIND REMEMBERS OUR WORDS</h1>
-      <p class="subtitle">Some words are meant to drift away, and find their way back.</p>
+      <p class="eyebrow">A LETTER THAT THE WIND COULD NOT KEEP</p>
+      <h1 id="cloud-text">AT FIRST THE SKY HELD EVERY LETTER IN ITS PLACE. THEN A QUIET WIND MOVED BETWEEN THE LINES, AND THE WORDS BEGAN TO FORGET THEIR SHAPES. SOME ROSE LIKE MIST. SOME DRIFTED BEYOND THE HORIZON. NOTHING WAS LOST ALL AT ONCE; EVERYTHING LEARNED TO LET GO.</h1>
+      <p class="subtitle">Nothing returns in quite the same shape.</p>
     </section>
 
     <canvas id="mist-canvas" aria-hidden="true"></canvas>
 
     <footer class="bottom-bar">
-      <div class="hint"><span class="hint-symbol" aria-hidden="true">✧</span><span>轻点任意单词，让它随风化成云</span></div>
+      <div class="hint"><span class="hint-symbol" aria-hidden="true">✧</span><span>轻点字母，让它被风吹散；点击空白天空，吹起一阵更大的风</span></div>
       <div class="controls">
-        <label for="wind-range">WIND <span id="wind-value">02</span></label>
-        <input id="wind-range" type="range" min="0" max="5" step="1" value="2" aria-label="微风强度">
-        <button id="reset-button" type="button" title="让天空恢复初始状态">重新开始 <span aria-hidden="true">↻</span></button>
+        <label for="wind-range">WIND <output id="wind-value">04</output></label>
+        <input id="wind-range" type="range" min="0" max="6" step="1" value="4" aria-label="风力强度">
+        <label for="chaos-range">DISORDER <output id="chaos-value">75</output></label>
+        <input id="chaos-range" type="range" min="0" max="100" step="5" value="75" aria-label="字母失序程度">
+        <button id="reset-button" type="button">重新开始 <span aria-hidden="true">↻</span></button>
       </div>
     </footer>
     <div class="sr-only" id="live-status" aria-live="polite" aria-atomic="true"></div>
