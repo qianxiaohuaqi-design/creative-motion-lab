@@ -1,6 +1,6 @@
 # Cloud Typography｜给其他 AI 的交接说明
 
-请先阅读：仓库 AGENTS.md、docs/PROJECT-STATUS.md、本目录 DESIGN.md、TASKS.md 和 README.md。
+请先阅读：仓库 AGENTS.md、shared/plans/PROJECT-STATUS.md、本目录 DESIGN.md、TASKS.md 和 README.md。
 
 ## 明确目标
 原创的互动动态艺术《云间来信》：
@@ -13,7 +13,7 @@
 - 必须保留可读代码、解释和可调参数，供初学者理解。
 
 ## 已有代码（不是待开发目标）
-路径：projects/creative-coding/00-cloud-typography/
+路径：agents/luci/projects/cloud-typography/
 - index.html：页面。
 - style.css：背景与排版。
 - script.js：读取标题 THE WIND REMEMBERS OUR WORDS，拆分为五个 span.word。
@@ -37,7 +37,7 @@ M5：视觉打磨、性能、移动端、减少动画偏好、演示录制。
 - 最终附功能清单、测试结果、实现原理、可调参数。
 
 ## 协作与部署
-- GitHub 的 main 分支自动部署 Netlify；默认新建 experiment/codex-cloud 或 experiment/claude-cloud 等独立分支，不要未经用户批准合并主线。
+- GitHub 的 main 分支自动部署 Netlify；Luci 仅在自己的 agents/luci/ 目录维护作品，Gemini 和 DeepSeek 不应修改这里的个人文件。
 - 不能擅自上传第三方参考视频、机密或未经授权素材。
 - 原作者的创作工具和源码未确认，任何技术判断要标明推测。
 

@@ -27,4 +27,7 @@
 用 VS Code + Live Server 打开 index.html，或直接 Chrome 打开。
 下一步优先 M1：单词点击淡出并自动恢复，然后逐步引入微风和 Canvas 云粒子。详见 TASKS.md。
 
-原视频、原作者工程和源码不在本仓库；参考详情见 references/VIDEO-INDEX.md。
+原视频、原作者工程和源码不在本仓库；参考详情见 shared/references/VIDEO-INDEX.md。
+
+## 归属
+这里是 Luci 的个人作品目录；共用目标见 shared/briefs/CLOUD-TYPOGRAPHY.md，共用起点见 shared/starter/cloud-typography/。

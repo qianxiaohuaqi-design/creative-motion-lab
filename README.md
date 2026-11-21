@@ -1,32 +1,37 @@
-# Creative Motion Lab｜创意编程与 AI 视频实验室
+# Creative Motion Lab｜三 AI 共创影像实验室
 
-长期学习与作品仓库：代码动画、动态艺术、产品宣传视频、三维场景及 AI 生成视频。
+这是用于学习创意编程、代码动画、动态艺术、AI 视频及产品宣传片的**私有 GitHub 仓库**。
 
-## 快速导航
-- [六阶段学习路线](docs/LEARNING-ROADMAP.md)
-- [当前项目进度](docs/PROJECT-STATUS.md)
-- [参考视频索引](references/VIDEO-INDEX.md)
-- [多 AI 协作规则](AGENTS.md)
-- [Cloud Typography 作品目录](projects/creative-coding/00-cloud-typography/)
-- [给其他 AI 的交接说明](projects/creative-coding/00-cloud-typography/AI-HANDOFF.md)
-- [Cloud Typography 任务清单](projects/creative-coding/00-cloud-typography/TASKS.md)
-- [Netlify 部署说明](NETLIFY-DEPLOY.md)
+## 目录原则
+**共用内容统一存放，AI 作品独立保存。** 用户决定统一要求和最终验收方案。
 
-## 目录
-- docs/：学习路线和整体进度。
-- references/：参考作品的来源、摘要和技术推测；**尚无原始参考 MP4**。
-- projects/creative-coding/：程序化艺术，每个项目独立目录。
-- projects/ai-video/：后续生成式 AI 视频项目。
+| 路径 | 作用 |
+|---|---|
+| [shared/](shared/) | 共有的学习计划、参考视频索引、统一需求和起始模板 |
+| [agents/luci/](agents/luci/) | Luci 自己的配置、进度、Cloud Typography 源码和未来作品 |
+| [agents/gemini/](agents/gemini/) | Gemini 自己的配置、进度、源码和作品 |
+| [agents/deepseek/](agents/deepseek/) | DeepSeek 自己的配置、进度、源码和作品 |
+| [AGENTS.md](AGENTS.md) | 全体 AI 的协作与修改规则 |
+| [NETLIFY-DEPLOY.md](NETLIFY-DEPLOY.md) | 在线预览网站部署说明 |
 
-## 当前作品
-**Cloud Typography / 云间来信**
-- 已有：蓝天渐变背景、白色文字、JS 将标题拆为五个单词元素。
-- 尚无：微风、点击消散、云雾粒子、自动重组。
-- 已确定交互 A：点击一个单词，消散后重新凝聚。
-- [在线预览](https://reina-motion-lab.netlify.app)（2026-11-21 Netlify 首次部署已确认 Ready）。
+## 所有人共同读取
+- [完整六阶段学习计划](shared/plans/LEARNING-ROADMAP.md)
+- [项目总体进度](shared/plans/PROJECT-STATUS.md)
+- [参考视频与教程分析](shared/references/VIDEO-INDEX.md)（**不包含原视频 MP4**）
+- [Cloud Typography 统一创作方案](shared/briefs/CLOUD-TYPOGRAPHY.md)
+- [统一起始版本](shared/starter/cloud-typography/)
 
-## 给其他 AI
-先读 AGENTS.md 和 Cloud Typography 的 AI-HANDOFF.md，再决定如何实现。建议新开分支，不要未经验收覆盖 main；main 推送会自动更新 Netlify。
+## 各 AI 独立维护
+每个 AI 在自己 agents/<ai>/config/ 保存配置，在 agents/<ai>/projects/<project>/ 保存源码与作品，在 agents/<ai>/STATUS.md 记录进度。未经用户同意，不修改其他 AI 的工作区或共同要求。
 
-## 学习方式
-用户想亲手学：讲原理、布置练习、复盘。用户明确要求 AI 直接做：允许实现，但须记录设计与技术细节，供之后学习。
+Cloud Typography 的三份初始源代码相同。**Luci 为当前 v0.2 基线，Gemini/DeepSeek 仅取得模板，还没有独立实现的动画效果。**
+
+## 在线预览
+https://reina-motion-lab.netlify.app
+
+现有 Netlify 站点只发布 agents/luci/projects/cloud-typography/。当前作品已经实现蓝天与五个可独立控制的单词；**微风、点击消散、云雾粒子和重新凝聚仍在计划中**。
+
+## 新 AI 入场
+阅读 [AGENTS.md](AGENTS.md) → [共用需求](shared/briefs/CLOUD-TYPOGRAPHY.md) → 自己的 config/ 和 README.md → 在自己路径内开始创作、更新 STATUS.md。
+
+原参考视频文件与原作者真实项目工程并未上传；需要逐帧分析的 AI 须由用户另行提供原文件。

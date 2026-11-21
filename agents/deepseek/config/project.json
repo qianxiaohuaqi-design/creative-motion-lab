@@ -1,0 +1,12 @@
+{
+  "agent": "deepseek",
+  "workspace": "agents/deepseek/",
+  "work_scope": "agents/deepseek/",
+  "shared_plan": "shared/plans/LEARNING-ROADMAP.md",
+  "shared_brief": "shared/briefs/CLOUD-TYPOGRAPHY.md",
+  "reference_index": "shared/references/VIDEO-INDEX.md",
+  "starter": "shared/starter/cloud-typography/",
+  "project": "agents/deepseek/projects/cloud-typography/",
+  "production_url": null,
+  "shared_edits_require_user_approval": true
+}

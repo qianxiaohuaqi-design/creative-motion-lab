@@ -33,4 +33,7 @@ Three.js、Blender、材质、光照、摄像机、景深、运动与音频同�
 ## 第六阶段｜原创作品集（规划）
 完整艺术短片、产品宣传、音乐视觉、游戏演出，保留过程文档和展示版本。
 
-详细功能进度请读 docs/PROJECT-STATUS.md；原视频参考索引请读 references/VIDEO-INDEX.md。
+详细功能进度请读 shared/plans/PROJECT-STATUS.md；原视频参考索引请读 shared/references/VIDEO-INDEX.md。
+
+## 多 AI 实践
+三方共享学习路线，但分别在 agents/luci/、agents/gemini/、agents/deepseek/ 下维护自己的项目。三份初始代码相同，后续可比较各自实现。

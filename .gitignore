@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+
+# 不将第三方参考原片提交到仓库
+**/reference-originals/
+**/raw-reference-videos/
+**/private-reference-videos/

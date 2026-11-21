@@ -1,0 +1,12 @@
+{
+  "agent": "luci",
+  "workspace": "agents/luci/",
+  "work_scope": "agents/luci/",
+  "shared_plan": "shared/plans/LEARNING-ROADMAP.md",
+  "shared_brief": "shared/briefs/CLOUD-TYPOGRAPHY.md",
+  "reference_index": "shared/references/VIDEO-INDEX.md",
+  "starter": "shared/starter/cloud-typography/",
+  "project": "agents/luci/projects/cloud-typography/",
+  "production_url": "https://reina-motion-lab.netlify.app",
+  "shared_edits_require_user_approval": true
+}

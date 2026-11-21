@@ -1,22 +1,26 @@
 # Creative Motion Lab｜多 AI 协作规则
 
-## 先阅读
-- README.md：仓库入口。
-- docs/LEARNING-ROADMAP.md：学习总路线。
-- docs/PROJECT-STATUS.md：真实进度。
-- references/VIDEO-INDEX.md：参考作品索引（**没有原 MP4 文件**）。
-- 当前项目目录的 README.md、DESIGN.md、TASKS.md、AI-HANDOFF.md。
+## 先读
+1. README.md（全仓库导航）
+2. shared/plans/LEARNING-ROADMAP.md（六阶段学习计划）
+3. shared/plans/PROJECT-STATUS.md（总进度）
+4. shared/briefs/CLOUD-TYPOGRAPHY.md（统一需求）
+5. shared/references/VIDEO-INDEX.md（参考视频摘要，原 MP4 未上传）
+6. 自己的 agents/<ai>/config/、projects/ 和 STATUS.md
 
-## 两种模式
-- 教学模式：用户想动手学习时，讲解原理、拆小任务、逐步提供提示和代码审查。
-- 实现模式：用户明确要求 AI 帮忙完成时，可以直接编写代码，但保留可理解的结构和说明。别把最初的“教学约定”当成阻止执行新任务的限制。
+## 三个 AI 的工作空间
+- Luci（ChatGPT）：agents/luci/
+- Gemini：agents/gemini/
+- DeepSeek：agents/deepseek/
 
-## 协作原则
-- main 是 Netlify 在线预览的稳定基线，优先在独立分支/副本实验，提交变更摘要或 PR，用户验收后合并。
-- 每个作品一个独立子目录；避免将无关项目混入同一个网页。
-- 代码/配置/已验收结果与想象中的目标效果须明确区分。
-- 参考作品仅是灵感和分析依据，不代表已经取得原作者源码。不要将未经授权的第三方视频、素材或密钥提交到公开站点。
-- Netlify 只发布 Cloud Typography 的三个静态文件，增加资源时应检查根目录 netlify.toml。
+各自只改自己目录的代码、文档、配置和进度，不擅自改动其他 AI 的文件。
+shared/ 属于全体，变更要用户确认。注意这种路径隔离是协作约定，不是 GitHub 强制权限。
 
-## 当前入口
-projects/creative-coding/00-cloud-typography/AI-HANDOFF.md
+## 教学与直接实现
+用户想学习时，先解释原理、给练习并审查；明确要求 AI 直接制作时可以开发完整作品，保留技术解释。
+区分“已实现 / 未实现 / 仅推测 / 未取得原视频”。
+
+## 发布
+Netlify 当前只从 agents/luci/projects/cloud-typography/ 复制三份静态网页到 dist；更新或增加资源需核对根目录 netlify.toml。
+main 分支自动部署；Gemini、DeepSeek 的作品不应直接替换 Luci 的线上预览。
+公开网页不放机密或未授权第三方素材。
