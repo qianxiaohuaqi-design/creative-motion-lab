@@ -33,12 +33,14 @@
     <div id="wind-halo" class="wind-halo" aria-hidden="true"></div>
 
     <footer class="bottom-bar">
-      <div class="hint"><span class="hint-symbol" aria-hidden="true">✧</span> 轻点字母吹散 · 按住并拖动，亲手在天空里制造一阵风</div>
+      <div class="hint"><span class="hint-symbol" aria-hidden="true">✧</span> 轻点字母吹散 · 长按拖动控制风向与范围</div>
       <div class="controls">
-        <label for="wind-range">WIND <output id="wind-value">03</output></label>
-        <input id="wind-range" type="range" min="0" max="6" step="1" value="3" aria-label="风力强度">
-        <label for="chaos-range">DISORDER <output id="chaos-value">68</output></label>
-        <input id="chaos-range" type="range" min="0" max="100" step="5" value="70" aria-label="失序程度">
+        <label for="wind-range" title="常风：文字平时漂浮和消散时的风力">WIND <span class="control-zh">常风</span> <output id="wind-value">03</output></label>
+        <input id="wind-range" type="range" min="0" max="6" step="1" value="3" aria-label="常风强度，控制文字自然漂浮与消散的风力" title="0—6，控制全局的柔风">
+        <label for="chaos-range" title="失序：控制字母随时间偏离整齐排版的程度">DISORDER <span class="control-zh">失序</span> <output id="chaos-value">70</output></label>
+        <input id="chaos-range" type="range" min="0" max="100" step="5" value="70" aria-label="失序程度，控制字母漂移和旋转的混乱程度" title="0—100，控制自然失序的幅度">
+        <label for="radius-range" title="风圈：鼠标/手指长按时的局部风影响半径">RADIUS <span class="control-zh">风圈</span> <output id="radius-value">200</output></label>
+        <input id="radius-range" type="range" min="80" max="340" step="10" value="200" aria-label="长按局部风圈半径，单位像素" title="80—340 像素，光圈与实际受风半径同步">
         <button id="gust-button" type="button">吹散整段 <span aria-hidden="true">↗</span></button>
         <button id="reset-button" type="button">重新开始 <span aria-hidden="true">↺</span></button>
       </div>

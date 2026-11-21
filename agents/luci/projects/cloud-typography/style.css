@@ -149,3 +149,24 @@ button, input { font: inherit; }
 .bottom-bar { touch-action: auto; }
 #cloud-text { touch-action: none; }
 @media (prefers-reduced-motion: reduce) { .wind-halo { display: none; } }
+
+/* v1.4 · The canvas is an interaction surface, not selectable web prose.
+   v1.3 only disabled selection on glyphs; inter-word text nodes stayed selectable,
+   producing Chromium's conspicuous blue selection rectangles during drags. */
+.sky, .sky * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+#cloud-text::selection, #cloud-text *::selection, .text-plane::selection {
+  background: transparent;
+}
+.controls .control-zh {
+  font-weight: 450; letter-spacing: 0; opacity: .76; padding-inline: 1px;
+}
+.controls #radius-value { width: 27px; }
+.controls input[type="range"] { touch-action: pan-x; }
+@media (max-width: 520px) {
+  .controls label { font-size: 9px; }
+  .controls input[type="range"] { width: 58px; }
+}

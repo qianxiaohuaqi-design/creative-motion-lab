@@ -1,4 +1,4 @@
-/** Cloud Typography v1.3 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v1.4 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -8,13 +8,15 @@
   const canvas = document.getElementById('mist-canvas');
   const windRange = document.getElementById('wind-range');
   const chaosRange = document.getElementById('chaos-range');
+  const radiusRange = document.getElementById('radius-range');
   const windValue = document.getElementById('wind-value');
   const chaosValue = document.getElementById('chaos-value');
+  const radiusValue = document.getElementById('radius-value');
   const gustButton = document.getElementById('gust-button');
   const resetButton = document.getElementById('reset-button');
   const status = document.getElementById('live-status');
   const halo = document.getElementById('wind-halo');
-  if (!sky || !paragraph || !canvas || !windRange || !chaosRange || !resetButton) return;
+  if (!sky || !paragraph || !canvas || !windRange || !chaosRange || !radiusRange || !radiusValue || !resetButton) return;
   const ctx = canvas.getContext('2d', {alpha:true});
   if (!ctx) return;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -27,6 +29,7 @@
   const random = v => { const f = Math.sin(v * 117.17 + 29.3) * 43758.5; return f - Math.floor(f); };
   let wind = +windRange.value;
   let disorder = +chaosRange.value / 100;
+  let radiusSetting = +radiusRange.value;
   let start = performance.now();
   let vw = window.innerWidth, vh = window.innerHeight, dpr = 1;
   let lastAnnouncement = 0;
@@ -34,7 +37,7 @@
   // Pointer state is deliberately separate from per-letter state: a tap remains a tap.
   const press = { active:false, id:null, x:0,y:0, downX:0,downY:0, downAt:0,
     lastX:0,lastY:0,lastAt:0, triggered:false, dirX:.94,dirY:-.34 };
-  const field = {x:-1000,y:-1000,dirX:.94,dirY:-.34, strength:0, radius:155};
+  const field = {x:-1000,y:-1000,dirX:.94,dirY:-.34, strength:0, radius:radiusSetting};
   let previousTick = performance.now();
   let suppressClicksUntil = 0;
 
@@ -221,6 +224,14 @@
     press.active=false;press.id=null;
     // field.strength is not reset here: the remaining wind decays naturally.
   }
+  // Block Chrome's native text selection and drag ghosting during wind sweeps.
+  // This also covers whitespace text nodes between .word elements.
+  sky.addEventListener('selectstart', event => {
+    if (!event.target.closest?.('.bottom-bar')) event.preventDefault();
+  });
+  sky.addEventListener('dragstart', event => {
+    if (!event.target.closest?.('.bottom-bar')) event.preventDefault();
+  });
   sky.addEventListener('pointerdown',handlePointerDown);
   window.addEventListener('pointermove',handlePointerMove,{passive:true});
   window.addEventListener('pointerup',handlePointerEnd);
@@ -240,7 +251,8 @@
         field.dirX=press.dirX/unit;field.dirY=press.dirY/unit;
         field.x=press.x;field.y=press.y;
         field.strength=.35+2.2*smooth((held-180)/1700);
-        field.radius=125+95*smooth((held-200)/1550);
+        // Actual affected area and halo diameter always share the slider's radius.
+        field.radius=radiusSetting;
       }
     } else {
       const fade=Math.exp(-dt*.0034);
@@ -368,6 +380,7 @@
   }
   windRange.addEventListener('input',()=>{wind=+windRange.value;windValue.textContent=String(wind).padStart(2,'0');});
   chaosRange.addEventListener('input',()=>{disorder=+chaosRange.value/100;chaosValue.textContent=String(chaosRange.value).padStart(2,'0');});
+  radiusRange.addEventListener('input',()=>{radiusSetting=+radiusRange.value;field.radius=radiusSetting;radiusValue.textContent=String(radiusSetting);});
   resetButton.addEventListener('click',()=>{
     effects.clear();gusting=false;start=performance.now();
     press.active=false;press.id=null;field.strength=0;field.x=-1000;field.y=-1000;
@@ -381,5 +394,6 @@
   build(); resize();
   windValue.textContent=String(wind).padStart(2,'0');
   chaosValue.textContent=String(chaosRange.value).padStart(2,'0');
+  radiusValue.textContent=String(radiusSetting);
   requestAnimationFrame(animate);
 })();
