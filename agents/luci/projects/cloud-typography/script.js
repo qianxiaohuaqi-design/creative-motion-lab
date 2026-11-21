@@ -63,8 +63,9 @@
     for (const item of letters) {
       // Width/height are layout dimensions, unaffected by CSS transform.
       const el = item.element;
-      item.x = el.offsetLeft + el.offsetWidth/2;
-      item.y = el.offsetTop + el.offsetHeight/2;
+      const word = el.parentElement;
+      item.x = word.offsetLeft + el.offsetLeft + el.offsetWidth / 2;
+      item.y = word.offsetTop + el.offsetTop + el.offsetHeight / 2;
     }
   }
   function resize() {
@@ -82,9 +83,9 @@
     if (wide) {
       g.save(); g.translate(64,64); g.scale(1.6,.58);
       const grad=g.createRadialGradient(0,0,0,0,0,48);
-      grad.addColorStop(0,'rgba(247,249,246,.80)');
+      grad.addColorStop(0,'rgba(255,255,255,.80)');
       grad.addColorStop(.3,'rgba(247,249,246,.33)');
-      grad.addColorStop(.7,'rgba(240,244,241,.10)');
+      grad.addColorStop(.7,'rgba(250,252,255,.10)');
       grad.addColorStop(1,'rgba(237,243,240,0)');
       g.fillStyle=grad; g.fillRect(-64,-64,128,128);g.restore();
     } else {
@@ -194,8 +195,25 @@
   });
   // The optional gust button may be absent in some layouts; sky click still triggers a gust.
   gustButton?.addEventListener('click', scatterAll);
+  // Projected 3D glyphs can miss browser hit-testing by a few pixels.
+  // A spatial fallback ensures individual letters remain reliably clickable.
+  function nearestLetter(x,y){
+    let best=null,score=Infinity;
+    for(const item of letters){
+      if(item.gone||effects.has(item.index))continue;
+      const r=item.element.getBoundingClientRect();
+      if(x<r.left-4||x>r.right+4||y<r.top-4||y>r.bottom+4)continue;
+      const dx=(x-(r.left+r.right)/2)/Math.max(10,r.width);
+      const dy=(y-(r.top+r.bottom)/2)/Math.max(10,r.height);
+      if(dx*dx+dy*dy<score){score=dx*dx+dy*dy;best=item;}
+    }
+    return best;
+  }
   sky.addEventListener('click',ev=>{
-    if(ev.target.closest('.letter, .masthead, .bottom-bar'))return;
+    if(ev.target.closest?.('.masthead,.bottom-bar'))return;
+    const nearest=nearestLetter(ev.clientX,ev.clientY);
+    if(nearest){dissolve(nearest);return;}
+    if(ev.target.closest?.('.composition'))return;
     scatterAll();
   });
 
@@ -229,31 +247,30 @@
   function animate(now) {
     if(!document.hidden){
       const time=now-begin;
-      const phase=clamp(time/26000,0,1);
-      const entropy=(.08+.92*ease(phase))*disorder;
-      // On narrow screens, keep independent drift from overwhelming the smaller glyphs.
-      const mobileScale=clamp(canvasWidth/950,.30,1);
-      const breeze=(wind/4)*mobileScale;
+      const entropy=disorder*ease((time-3300)/30000);
+      const calm=.10+.90*ease((time-900)/15000);
+      const mobileScale=clamp(canvasWidth/1080,.42,1);
+      const breeze=(wind/3)*mobileScale;
       if(reduced.matches){
-        for(const x of letters)if(!x.gone)x.element.style.transform='';
+        for(const item of letters)if(!item.gone)item.element.style.transform='';
       }else{
-        letters.forEach((item)=>{
-          if(item.gone || effects.has(item.index))return;
-          const z=item.index;
-          const px=item.x*.012, py=item.y*.011;
-          // Nearby letters share the same rolling gust, while each letter has its own bias.
-          const shared=Math.sin(time*.00036+px*.65+py*.28)*14 + Math.sin(time*.00012+px*.42)*12;
-          const local=Math.sin(time*.00051+px+z*.13)*11+Math.cos(time*.00024+py+z*.09)*10;
-          const dx=(shared*.58+local*.44+(item.randX*75+Math.sin(time*.00028+z*.23)*24)*entropy)*breeze;
-          const dy=(Math.cos(time*.00028+px*.4)*8 + Math.sin(time*.0003+z*.18)*8 + (item.randY*65+Math.cos(time*.00023+z*.16)*22)*entropy)*breeze;
-          const angle=(Math.sin(time*.00026+z*.16)*2.2 + item.randX*29*entropy)*breeze;
-          item.element.style.transform=`translate3d(${dx.toFixed(2)}px,${dy.toFixed(2)}px,0) rotate(${angle.toFixed(2)}deg)`;
-        });
+        for(const item of letters){
+          if(item.gone||effects.has(item.index))continue;
+          const k=item.index,x=item.x*.012,y=item.y*.011;
+          const sharedX=Math.sin(time*.00026+x*.45+y*.18)*9+Math.sin(time*.00013+x*.33)*8;
+          const sharedY=Math.cos(time*.00024+y*.37+x*.18)*5;
+          const dx=(sharedX+Math.sin(time*.00037+x+k*.12)*5+(item.randX*49+Math.sin(time*.00014+k*.17)*17)*entropy)*breeze*calm;
+          const dy=(sharedY+Math.sin(time*.00033+y+k*.1)*5+(item.randY*42+Math.cos(time*.00016+k*.19)*15)*entropy)*breeze*calm;
+          const depth=(item.randX*12+Math.sin(time*.00025+x*.41+k*.08)*9+item.randX*55*entropy)*breeze*calm;
+          const rz=(Math.sin(time*.0002+k*.13)*1.3+item.randX*20*entropy)*breeze*calm;
+          const rx=(item.randY*6*entropy+Math.sin(time*.00024+k*.18)*2)*breeze*calm;
+          const ry=(item.randX*10*entropy+Math.cos(time*.00019+k*.12)*3)*breeze*calm;
+          item.element.style.transform=`translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,${depth.toFixed(1)}px) rotateX(${rx.toFixed(1)}deg) rotateY(${ry.toFixed(1)}deg) rotateZ(${rz.toFixed(1)}deg)`;
+        }
       }
       if(effects.size)drawClouds(now);
     }
-    lastFrame=now;
-    rafId=requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
   }
 
   windRange.addEventListener('input',()=>{wind=Number(windRange.value);windValue.textContent=String(wind).padStart(2,'0');});

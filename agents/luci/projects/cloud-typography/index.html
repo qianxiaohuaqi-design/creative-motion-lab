@@ -3,39 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#648da8">
-  <meta name="description" content="Cloud Typography — letters caught by wind, scattered into clouds, never quite returning.">
-  <title>Cloud Typography — 云间来信</title>
+  <meta name="theme-color" content="#85c5e5">
+  <meta name="description" content="Cloud Typography — a letter from the sky, drifting into cloud and wind.">
+  <title>Cloud Typography · 云间来信</title>
   <link rel="stylesheet" href="./style.css">
   <script src="./script.js" defer></script>
 </head>
 <body>
   <main class="sky" id="sky">
-    <div class="atmosphere atmosphere--one" aria-hidden="true"></div>
-    <div class="atmosphere atmosphere--two" aria-hidden="true"></div>
-    <div class="veil" aria-hidden="true"></div>
-
+    <div class="sky-light" aria-hidden="true"></div>
+    <div class="cloud-bank cloud-bank--far" aria-hidden="true"></div>
+    <div class="cloud-bank cloud-bank--near" aria-hidden="true"></div>
+    <div class="air-haze" aria-hidden="true"></div>
     <header class="masthead">
-      <div class="brand"><span class="brand-mark" aria-hidden="true">✳</span> CREATIVE MOTION LAB <span class="brand-divider">/</span> EXPERIMENT 00</div>
-      <span class="edition">AN EXPERIMENT IN LETTING GO — V1.1</span>
+      <span class="brand"><span class="brand-mark" aria-hidden="true">✳</span> CREATIVE MOTION LAB <span class="brand-divider">/</span> EXPERIMENT 00</span>
+      <span class="edition">A STUDY OF WORDS, WIND AND SPACE</span>
     </header>
-
     <section class="composition" aria-labelledby="cloud-text">
-      <p class="eyebrow">A LETTER THAT THE WIND COULD NOT KEEP</p>
-      <h1 id="cloud-text">AT FIRST THE SKY HELD EVERY LETTER IN ITS PLACE. THEN A QUIET WIND MOVED BETWEEN THE LINES, AND THE WORDS BEGAN TO FORGET THEIR SHAPES. SOME ROSE LIKE MIST. SOME DRIFTED BEYOND THE HORIZON. NOTHING WAS LOST ALL AT ONCE; EVERYTHING LEARNED TO LET GO.</h1>
-      <p class="subtitle">Nothing returns in quite the same shape.</p>
+      <div class="text-plane">
+        <p class="eyebrow">A LETTER WRITTEN IN THE SKY</p>
+        <h1 id="cloud-text">Some days the sky holds every word in place. Then the wind arrives, almost too quietly to notice. A letter tilts. Another drifts. Soon the sentences loosen into pale clouds, and what once made sense begins to float away.</h1>
+        <p class="subtitle">Even the gentlest wind can change a story.</p>
+      </div>
     </section>
-
     <canvas id="mist-canvas" aria-hidden="true"></canvas>
-
     <footer class="bottom-bar">
-      <div class="hint"><span class="hint-symbol" aria-hidden="true">✧</span><span>轻点字母，让它被风吹散；点击空白天空，吹起一阵更大的风</span></div>
+      <div class="hint"><span class="hint-symbol" aria-hidden="true">✧</span><span>轻点字母，让云随风散去 · 轻点空白处，吹起一阵风</span></div>
       <div class="controls">
-        <label for="wind-range">WIND <output id="wind-value">04</output></label>
-        <input id="wind-range" type="range" min="0" max="6" step="1" value="4" aria-label="风力强度">
-        <label for="chaos-range">DISORDER <output id="chaos-value">75</output></label>
-        <input id="chaos-range" type="range" min="0" max="100" step="5" value="75" aria-label="字母失序程度">
-        <button id="reset-button" type="button">重新开始 <span aria-hidden="true">↻</span></button>
+        <label for="wind-range">WIND <output id="wind-value">03</output></label>
+        <input id="wind-range" type="range" min="0" max="6" step="1" value="3" aria-label="风力强度">
+        <label for="chaos-range">DISORDER <output id="chaos-value">70</output></label>
+        <input id="chaos-range" type="range" min="0" max="100" step="5" value="70" aria-label="失序程度">
+        <button id="gust-button" type="button">吹散整段 <span aria-hidden="true">↗</span></button>
+        <button id="reset-button" type="button">重新开始 <span aria-hidden="true">↺</span></button>
       </div>
     </footer>
     <div class="sr-only" id="live-status" aria-live="polite" aria-atomic="true"></div>
