@@ -192,7 +192,8 @@
     const item=letters[Number(el.dataset.index)];
     dissolve(item);
   });
-  gustButton.addEventListener('click', scatterAll);
+  // The optional gust button may be absent in some layouts; sky click still triggers a gust.
+  gustButton?.addEventListener('click', scatterAll);
   sky.addEventListener('click',ev=>{
     if(ev.target.closest('.letter, .masthead, .bottom-bar'))return;
     scatterAll();
