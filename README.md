@@ -1,29 +1,32 @@
-# Creative Motion Lab
+# Creative Motion Lab｜创意编程与 AI 视频实验室
 
-一个以**亲手实践**为中心的创意编程、动态影像和 AI 视频学习仓库。
+长期学习与作品仓库：代码动画、动态艺术、产品宣传视频、三维场景及 AI 生成视频。
 
-## 学习方式
-- 先理解视觉效果和运动规律，再写代码、调试、复盘。
-- AI（Luci）提供解释、任务、提示和代码审查；不直接替学习者完成核心练习。
-- 每个作品保存：设计思路、可运行源代码、阶段记录、学习笔记和最终成果。
-- 参考艺术家的作品只用于学习分析；公开发表时使用原创或授权素材，并标注灵感来源。
+## 快速导航
+- [六阶段学习路线](docs/LEARNING-ROADMAP.md)
+- [当前项目进度](docs/PROJECT-STATUS.md)
+- [参考视频索引](references/VIDEO-INDEX.md)
+- [多 AI 协作规则](AGENTS.md)
+- [Cloud Typography 作品目录](projects/creative-coding/00-cloud-typography/)
+- [给其他 AI 的交接说明](projects/creative-coding/00-cloud-typography/AI-HANDOFF.md)
+- [Cloud Typography 任务清单](projects/creative-coding/00-cloud-typography/TASKS.md)
+- [Netlify 部署说明](NETLIFY-DEPLOY.md)
 
-## 学习路线（可根据教程调整）
-1. **创意编程与动态艺术**：文字、鱼群、柳枝、花枝等复刻练习。
-2. **产品动效与代码视频**：SVG、GSAP、React、Remotion。
-3. **风格化动效**：p5.js、粒子、手绘风与生成艺术。
-4. **三维影像**：Three.js、Blender、灯光和运镜。
-5. **生成式 AI 视频**：提示词、分镜、一致性及与代码动效结合。
-6. **原创作品集**：艺术短片、产品宣传、游戏过场。
+## 目录
+- docs/：学习路线和整体进度。
+- references/：参考作品的来源、摘要和技术推测；**尚无原始参考 MP4**。
+- projects/creative-coding/：程序化艺术，每个项目独立目录。
+- projects/ai-video/：后续生成式 AI 视频项目。
 
 ## 当前作品
-- [00 · Cloud Typography — 风会把字吹成云](projects/creative-coding/00-cloud-typography/README.md)：从思花《时间尽头的无序之书》的文字无序化理念出发，改编为天空蓝背景、云质感文字、微风扰动、点击消散的互动练习。
-- 后续计划：《人停鱼行》《夏天的手心》《春枝》。
+**Cloud Typography / 云间来信**
+- 已有：蓝天渐变背景、白色文字、JS 将标题拆为五个单词元素。
+- 尚无：微风、点击消散、云雾粒子、自动重组。
+- 已确定交互 A：点击一个单词，消散后重新凝聚。
+- [在线预览](https://reina-motion-lab.netlify.app)（2026-11-21 Netlify 首次部署已确认 Ready）。
 
-> 当前工作重点：先讨论并确定体验，再一步步实现；不要把草案当成最终美术方案。
+## 给其他 AI
+先读 AGENTS.md 和 Cloud Typography 的 AI-HANDOFF.md，再决定如何实现。建议新开分支，不要未经验收覆盖 main；main 推送会自动更新 Netlify。
 
-## 项目整理方式
-- [projects/](projects/)：所有作品与实验的总目录。
-- [projects/creative-coding/](projects/creative-coding/)：代码动画与互动动态艺术；每个作品独立文件夹。
-- [projects/ai-video/](projects/ai-video/)：未来 AI 视频生成与混合制作；每个作品独立文件夹。
-- 学习笔记、设计草案和成品都尽量保存在对应项目中。
+## 学习方式
+用户想亲手学：讲原理、布置练习、复盘。用户明确要求 AI 直接做：允许实现，但须记录设计与技术细节，供之后学习。

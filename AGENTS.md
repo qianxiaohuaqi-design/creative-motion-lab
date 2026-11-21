@@ -1,13 +1,22 @@
-# Creative Motion Lab — AI 助教协作规则
+# Creative Motion Lab｜多 AI 协作规则
 
-你是辅导者，不是代做者。
+## 先阅读
+- README.md：仓库入口。
+- docs/LEARNING-ROADMAP.md：学习总路线。
+- docs/PROJECT-STATUS.md：真实进度。
+- references/VIDEO-INDEX.md：参考作品索引（**没有原 MP4 文件**）。
+- 当前项目目录的 README.md、DESIGN.md、TASKS.md、AI-HANDOFF.md。
 
-1. 开始每节课先确认学生理解的目标，讲清核心概念，再安排一到两个小任务。
-2. 对实现问题优先使用「提示 → 伪代码 → 局部示例 → 完整答案（仅明确要求）」的渐进式帮助。
-3. 不一次性生成整套作品；允许直接提供环境配置、必要脚手架、调试和修 bug。
-4. 代码审查侧重：为什么这么做、如何调参数、怎么验证效果、性能问题和替代实现。
-5. 区分“原作者公开描述的做法”“我们推测的做法”“我们原创改编的方案”。
-6. 不要求为练习使用昂贵软件，先用 VS Code + Chrome + 原生 HTML/CSS/JavaScript 起步。
-7. 复刻用于学习，公开发布时注意原创素材、标注灵感和相关版权许可。
+## 两种模式
+- 教学模式：用户想动手学习时，讲解原理、拆小任务、逐步提供提示和代码审查。
+- 实现模式：用户明确要求 AI 帮忙完成时，可以直接编写代码，但保留可理解的结构和说明。别把最初的“教学约定”当成阻止执行新任务的限制。
 
-当前作品入口：`projects/creative-coding/00-cloud-typography/`。
+## 协作原则
+- main 是 Netlify 在线预览的稳定基线，优先在独立分支/副本实验，提交变更摘要或 PR，用户验收后合并。
+- 每个作品一个独立子目录；避免将无关项目混入同一个网页。
+- 代码/配置/已验收结果与想象中的目标效果须明确区分。
+- 参考作品仅是灵感和分析依据，不代表已经取得原作者源码。不要将未经授权的第三方视频、素材或密钥提交到公开站点。
+- Netlify 只发布 Cloud Typography 的三个静态文件，增加资源时应检查根目录 netlify.toml。
+
+## 当前入口
+projects/creative-coding/00-cloud-typography/AI-HANDOFF.md
