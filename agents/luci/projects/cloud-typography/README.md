@@ -1,33 +1,40 @@
-# 00｜Cloud Typography — 云间来信（工作名）
+# Cloud Typography / 云间来信 · v1.0
 
-当前状态：**Lesson 01 基线完成，完整动画尚未实现。**
+**状态：交互艺术完整功能已实现（Luci 工作区）。** 当前网站：https://reina-motion-lab.netlify.app
 
-## 目标
-受思花《时间尽头的无序之书》的“文字逐渐失序”理念启发，原创制作天空蓝背景、白色云朵字、轻缓微风的互动作品。交互方案 A 已确认：点击**整个单词**后像云一样消散，过一会儿重新凝聚为同一个词。
+## 作品理念
+受思花《时间尽头的无序之书》的文字失序理念启发，以天空作为画布，以白色云字表达“风会把字吹散，也会让它们重新归来”。使用原创前端代码，没有复制参考视频素材，也无法确认原作者实际使用的软件或代码。
 
-## 现有文件
-- index.html：页面入口和标题。
-- style.css：蓝天渐变和排版。
-- script.js：将 THE WIND REMEMBERS OUR WORDS 拆成五个 span.word（Lesson 01）。
-- DESIGN.md：详细视觉方案、技术与未决事项。
-- TASKS.md：分阶段任务及实际完成状态。
-- AI-HANDOFF.md：交给其他 AI 的实施规范与验收标准。
-- LEARNING-LOG.md：已进行课程的记录。
+## 已实现的七项功能
+1. 天空蓝渐变背景：柔和天空蓝、光晕和极慢的背景云气漂移。
+2. 白色文字排版：居中英文标题，并提供移动端适配。
+3. 字符串按空格拆为五个可独立交互的单词；单词内部再拆成字母。
+4. 白云质感字：通过 CSS 叠层、模糊、漫射光晕和软边模拟云状文字。
+5. 微风与渐进失序：基于时间的平滑正弦组合，邻近字母具有相关运动，不在每帧生成随机目标；强度可调整。
+6. 点击独立单词：使用 Canvas 离屏绘制字形并采样其像素，形成柔软粒子与云雾层，分散、漂移、渐隐。
+7. 自动重新凝聚：粒子沿插值路径聚回词形，恢复同一个单词；各单词独立、可反复触发。
 
-## 已完成
-- 原生 HTML/CSS/JavaScript 静态页面可运行。
-- 天空蓝背景、白色英文标题。
-- JavaScript 拆词、独立单词 DOM 元素。
-- Netlify 首次生产部署成功：https://reina-motion-lab.netlify.app
+## 运行方式
+- VS Code + Live Server 打开 `index.html`；也可直接通过浏览器打开。
+- 不依赖后端或第三方 JavaScript 库。
+- 鼠标点击、手机触摸或键盘 Tab + Enter/Space 可触发单词。
+- 底部 WIND 滑块可设置风力 0–5；「重新开始」可以重置画面。
+- 遵从 `prefers-reduced-motion` 系统偏好：减少动态效果。
 
-## 未实现
-点击反馈、模糊/云粒子消散、重新凝聚、轻缓微风、字母失序、视频导出。
+## 技术架构
+`index.html`：语义结构、控件、Canvas 图层。
+`style.css`：天空渐变、云质字边缘、响应式与基础美术。
+`script.js`：DOM 字符拆分、随时间变化的微风、离屏字形采样、Canvas 云絮粒子、消散/恢复状态机。
 
-## 运行与下一步
-用 VS Code + Live Server 打开 index.html，或直接 Chrome 打开。
-下一步优先 M1：单词点击淡出并自动恢复，然后逐步引入微风和 Canvas 云粒子。详见 TASKS.md。
+关键参数：`TIMING`（消散/停留/回归时长）、`wind`（微风强度）、`cap`（粒子上限）、`chaos`（失序成长率）。
 
-原视频、原作者工程和源码不在本仓库；参考详情见 shared/references/VIDEO-INDEX.md。
+## 发布
+项目由 GitHub 的 `main` 分支自动部署 Netlify；根目录 `netlify.toml` 仅复制本目录的三个网页文件到公开 `dist`，其他 AI 的作品和私人学习文件不会在本站公开。更多请见 `NETLIFY-DEPLOY.md`。
 
-## 归属
-这里是 Luci 的个人作品目录；共用目标见 shared/briefs/CLOUD-TYPOGRAPHY.md，共用起点见 shared/starter/cloud-typography/。
+## 测试
+见 [TESTING.md](TESTING.md)。本地浏览器测试已覆盖 1600×900、390×844、连续点击、多个单词同时点击、重置、键盘和减弱动画偏好。
+
+## 参考与下一阶段
+共享需求：`shared/briefs/CLOUD-TYPOGRAPHY.md`。
+参考索引：`shared/references/VIDEO-INDEX.md`（没有第三方原始 MP4）。
+未来可以继续打磨更真实的云层渲染、加入自定义诗句、导出视频，但这不影响七项核心功能完整可交互。

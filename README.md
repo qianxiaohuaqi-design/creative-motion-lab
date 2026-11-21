@@ -24,12 +24,12 @@
 ## 各 AI 独立维护
 每个 AI 在自己 agents/<ai>/config/ 保存配置，在 agents/<ai>/projects/<project>/ 保存源码与作品，在 agents/<ai>/STATUS.md 记录进度。未经用户同意，不修改其他 AI 的工作区或共同要求。
 
-Cloud Typography 的三份初始源代码相同。**Luci 为当前 v0.2 基线，Gemini/DeepSeek 仅取得模板，还没有独立实现的动画效果。**
+Cloud Typography 的三份初始源代码相同。**Luci 为当前 v1.0 完整交互版（七项功能均已实现）；Gemini/DeepSeek 仍仅取得初始模板，尚未完成自己的动画作品。**
 
 ## 在线预览
 https://reina-motion-lab.netlify.app
 
-现有 Netlify 站点只发布 agents/luci/projects/cloud-typography/。当前作品已经实现蓝天与五个可独立控制的单词；**微风、点击消散、云雾粒子和重新凝聚仍在计划中**。
+现有 Netlify 站点只发布 agents/luci/projects/cloud-typography/。Luci 版本已实现云质白字、微风与失序、点击云雾消散和重新凝聚；Gemini/DeepSeek 的作品未自动发布。
 
 ## 新 AI 入场
 阅读 [AGENTS.md](AGENTS.md) → [共用需求](shared/briefs/CLOUD-TYPOGRAPHY.md) → 自己的 config/ 和 README.md → 在自己路径内开始创作、更新 STATUS.md。
