@@ -1,0 +1,6 @@
+"$schema" = "https://open-api.netlify.com/netlify.schema.json"
+
+# Cloud Typography 预览站
+# 仓库包含多个独立项目，目前本网站只发布云间来信。
+[build]
+  publish = "projects/creative-coding/00-cloud-typography"
