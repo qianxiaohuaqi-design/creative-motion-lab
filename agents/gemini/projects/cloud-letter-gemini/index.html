@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>云中来信 · A Letter from the Clouds</title>
+  <meta name="description" content="云中来信 (Cloud Letter) — Gemini 独立互动艺术作品：明亮晴空、云白字母、单击永久消散、长按召唤携信白鸽与流动气流。" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="sky-stage" id="skyStage" aria-label="云中来信互动艺术画布">
+    <!-- 主交互画布：负责晴空背景、远景流云、3D 云白字母、气流风痕与携信白鸽 -->
+    <canvas id="cloudCanvas" aria-label="Cloud Letter interactive sky canvas"></canvas>
+
+    <!-- 顶部轻盈作品抬头与手势提示 -->
+    <header class="sky-header">
+      <div class="title-block">
+        <span class="title-en">A LETTER FROM THE CLOUDS</span>
+        <h1 class="title-cn">云中来信</h1>
+      </div>
+      <div class="gesture-hint" id="gestureHint">
+        <span>单击字母 · 永久云散</span>
+        <span class="dot" aria-hidden="true">·</span>
+        <span>长按拖拽 · 白鸽携信掠风</span>
+      </div>
+    </header>
+
+    <!-- 底部克制透明参数控制栏 -->
+    <aside class="control-dock" aria-label="风场与版面参数控制">
+      <div class="control-group" title="背景常风强度：控制天空基础微风的推力与云丝漂移速度">
+        <label class="control-label" for="windSlider">
+          <span class="label-en">WIND</span>
+          <span class="label-cn">常风</span>
+          <span class="label-val" id="windValue">36%</span>
+        </label>
+        <input id="windSlider" type="range" min="0" max="100" value="36" step="1" aria-label="WIND 背景常风强度" />
+      </div>
+
+      <div class="control-group" title="失序程度：控制每个字母独立漂浮、偏转与逐渐失序的幅度">
+        <label class="control-label" for="disorderSlider">
+          <span class="label-en">DISORDER</span>
+          <span class="label-cn">失序</span>
+          <span class="label-val" id="disorderValue">42%</span>
+        </label>
+        <input id="disorderSlider" type="range" min="0" max="100" value="42" step="1" aria-label="DISORDER 字母失序程度" />
+      </div>
+
+      <div class="control-group" title="气流范围：控制白鸽掠过时尾迹风痕对周边字母的影响范围">
+        <label class="control-label" for="reachSlider">
+          <span class="label-en">REACH</span>
+          <span class="label-cn">风域</span>
+          <span class="label-val" id="reachValue">55%</span>
+        </label>
+        <input id="reachSlider" type="range" min="15" max="100" value="55" step="1" aria-label="REACH 白鸽气流影响范围" />
+      </div>
+
+      <button class="reset-btn" id="resetBtn" type="button" title="重新展开信笺，恢复所有已消散与失序的字母">
+        <span class="btn-en">RESET</span>
+        <span class="btn-cn">重置</span>
+      </button>
+    </aside>
+  </main>
+
+  <script src="./script.js"></script>
+</body>
+</html>
