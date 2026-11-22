@@ -1,4 +1,4 @@
-/** Cloud Typography v1.7 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v1.8 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -287,14 +287,16 @@
         const flip=field.dirX<0;
         const tilt=flip?angle-(angle>0?180:-180):angle;
         const w=vw<=520?54:70,h=vw<=520?34:44;
-        messenger.style.transform=`translate3d(${(field.x-w/2).toFixed(1)}px,${(field.y-h/2).toFixed(1)}px,0) rotate(${tilt.toFixed(1)}deg) scaleX(${flip?-1:1})`;
+        const bank=clamp(field.dirY*25,-24,24);
+        const yaw=clamp(field.dirY*17+Math.sin(now*.004)*5,-22,22);
+        messenger.style.transform=`translate3d(${(field.x-w/2).toFixed(1)}px,${(field.y-h/2).toFixed(1)}px,0) perspective(240px) rotateZ(${tilt.toFixed(1)}deg) scaleX(${flip?-1:1}) rotateX(${bank.toFixed(1)}deg) rotateY(${yaw.toFixed(1)}deg)`;
       }
     }
     document.documentElement.style.setProperty('--wing-angle',`${Math.sin(now*.012)*12}deg`);
-    if(field.strength>.04 && !reduced.matches && now-lastEmission>Math.max(24,70-wind*2)){
+    if(field.strength>.04 && !reduced.matches && now-lastEmission>Math.max(46,86-wind*1.5)){
       stream.push({x:field.x,y:field.y,dx:field.dirX,dy:field.dirY,r:field.radius,power:Math.min(1,field.strength),speed:wind,start:now});
       lastEmission=now;
-      if(stream.length>36)stream.shift();
+      if(stream.length>40)stream.shift();
     }
     if(field.strength<=0 && !press.active){
       for(const item of letters)item.pressDose=Math.max(0,item.pressDose-seconds*.45);
@@ -346,33 +348,35 @@
     gust();
   });
   // A fading directional wake, rather than a circular UI indicator.
+  // Vapor wake: elongated soft sprites have no strokes, rings, or hard boundaries.
+  // All samples depend only on their saved birth time and direction, so seeking is deterministic.
   function drawStream(now,history=stream) {
     for(let i=history.length-1;i>=0;i--){
-      const s=history[i],t=(now-s.start)/1000;
+      const s=history[i],t=(now-s.start)/1300;
       if(t>=1){if(history===stream)stream.splice(i,1);continue;}
-      const fade=(1-t)*(1-t)*s.power;
+      if(t<0)continue;
+      const fade=smooth(t/.12)*Math.pow(1-t,1.85)*s.power;
       const nx=-s.dy,ny=s.dx;
-      const tail=s.r*(.65+t*(.6+(s.speed||4)*.065));
-      const x=s.x-s.dx*(18+t*65),y=s.y-s.dy*(18+t*65);
-      ctx.save();
-      ctx.lineCap='round';
-      for(let k=-2;k<=2;k++){
-        const spread=k*s.r*.105;
-        const wave=Math.sin(s.start*.004+k*1.7)*s.r*.08;
-        const endX=x-s.dx*tail+nx*(spread*1.8+wave);
-        const endY=y-s.dy*tail+ny*(spread*1.8+wave);
-        const grad=ctx.createLinearGradient(x,y,endX,endY);
-        grad.addColorStop(0,'rgba(255,255,255,0)');
-        grad.addColorStop(.24,`rgba(255,255,255,${fade*.18})`);
-        grad.addColorStop(.65,`rgba(255,255,255,${fade*.10})`);
-        grad.addColorStop(1,'rgba(255,255,255,0)');
-        ctx.strokeStyle=grad;ctx.lineWidth=(k===0?4.5:2.1)*(1+t)*Math.sqrt(s.r/200);
-        ctx.beginPath();ctx.moveTo(x+nx*spread*.4,y+ny*spread*.4);
-        ctx.bezierCurveTo(x-s.dx*tail*.26+nx*(spread+wave),y-s.dy*tail*.26+ny*(spread+wave),x-s.dx*tail*.70+nx*(spread-wave),y-s.dy*tail*.70+ny*(spread-wave),endX,endY);
-        ctx.stroke();
+      const speed=s.speed??4;
+      const angle=Math.atan2(s.dy,s.dx);
+      for(let k=0;k<4;k++){
+        const seed=s.start*.017+k*7.13;
+        const spread=(random(seed)-.5)*s.r*(.14+.37*t);
+        const drift=20+t*(58+speed*5)+(k+random(seed+2))*Math.min(23,s.r*.105);
+        const curl=Math.sin(t*4+k*1.9+s.start*.002)*s.r*.06*t;
+        const x=s.x-s.dx*drift+nx*(spread+curl);
+        const y=s.y-s.dy*drift+ny*(spread+curl);
+        const length=(24+s.r*.34)*(1+t*.7)*( .7+random(seed+5)*.5);
+        const width=(6+s.r*.072)*(1+t*1.1);
+        ctx.save();
+        ctx.translate(x,y);
+        ctx.rotate(angle+Math.sin(seed+t*3)*.15);
+        ctx.globalAlpha=fade*(.045+random(seed+3)*.025);
+        ctx.drawImage(mistStrand,-length/2,-width/2,length,width);
+        ctx.restore();
       }
-      ctx.restore();
     }
+    ctx.globalAlpha=1;
   }
   function particlesFrame(now,snapshot=null) {
     ctx.clearRect(0,0,vw,vh);

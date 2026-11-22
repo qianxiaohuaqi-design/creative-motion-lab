@@ -212,3 +212,9 @@ button, input { font: inherit; }
 .dove-wing {transform-origin:91px 58px;transform:rotate(var(--wing-angle));}
 .dove-far-wing {transform-origin:98px 53px;transform:rotate(calc(var(--wing-angle) * -.65));}
 @media(max-width:520px){.messenger{width:54px;height:34px;}}
+
+/* v1.8: shaded, perspective-banked 2.5D courier; remain small at the cursor. */
+.messenger {transform-style:preserve-3d;transform-origin:50% 54%;}
+.messenger svg {filter:drop-shadow(0 2px 2px rgba(67,125,153,.19)) drop-shadow(0 0 2px rgba(255,255,255,.18));}
+.dove-wing {transform-box:view-box;transform:rotate(var(--wing-angle)) rotateY(calc(var(--wing-angle) * 1.25));}
+.dove-far-wing {transform-box:view-box;transform:rotate(calc(var(--wing-angle) * -.82)) rotateY(calc(var(--wing-angle) * -.9));}
