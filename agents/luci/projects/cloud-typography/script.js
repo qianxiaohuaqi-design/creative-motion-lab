@@ -1,4 +1,4 @@
-/** Cloud Typography v1.6 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v1.7 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -286,7 +286,7 @@
         const angle=Math.atan2(field.dirY,field.dirX)*180/Math.PI;
         const flip=field.dirX<0;
         const tilt=flip?angle-(angle>0?180:-180):angle;
-        const w=vw<=520?57:76,h=vw<=520?38:51;
+        const w=vw<=520?54:70,h=vw<=520?34:44;
         messenger.style.transform=`translate3d(${(field.x-w/2).toFixed(1)}px,${(field.y-h/2).toFixed(1)}px,0) rotate(${tilt.toFixed(1)}deg) scaleX(${flip?-1:1})`;
       }
     }

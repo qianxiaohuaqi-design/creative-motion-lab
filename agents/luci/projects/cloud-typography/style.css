@@ -205,3 +205,10 @@ button, input { font: inherit; }
 }
 
 .take-paused .cloud-bank {animation-play-state:paused;} .take-paused .letter {transition:none;}
+
+/* v1.7 — cloud-feather courier. Keep both wings driven by the recorded wing angle. */
+.messenger {width:70px;height:44px;}
+.messenger svg {filter:drop-shadow(0 1px 2px rgba(84,143,170,.19)) drop-shadow(0 0 3px rgba(255,255,255,.24));}
+.dove-wing {transform-origin:91px 58px;transform:rotate(var(--wing-angle));}
+.dove-far-wing {transform-origin:98px 53px;transform:rotate(calc(var(--wing-angle) * -.65));}
+@media(max-width:520px){.messenger{width:54px;height:34px;}}

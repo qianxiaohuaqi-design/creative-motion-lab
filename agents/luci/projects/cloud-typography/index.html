@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#85c5e5">
   <meta name="description" content="Cloud Typography — a letter from the sky, drifting into cloud and wind.">
   <title>Cloud Typography · 云中来信</title>
-  <link rel="stylesheet" href="./style.css?v=1.6">
-  <script src="./script.js?v=1.6" defer></script>
+  <link rel="stylesheet" href="./style.css?v=1.7">
+  <script src="./script.js?v=1.7" defer></script>
 </head>
 <body>
   <main class="sky" id="sky">
@@ -31,26 +31,50 @@
 
     <canvas id="mist-canvas" aria-hidden="true"></canvas>
     <div id="messenger" class="messenger" aria-hidden="true">
-      <svg viewBox="0 0 150 100" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
+      <svg viewBox="0 0 160 100" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
         <defs>
-          <linearGradient id="feather-light" x1="0" y1="0" x2=".5" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#dcecf5"/></linearGradient>
-          <linearGradient id="body-light" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#e2f0f7"/></linearGradient>
+          <linearGradient id="cloud-dove-body" x1=".25" y1="0" x2=".7" y2="1">
+            <stop offset="0" stop-color="#ffffff"/><stop offset=".56" stop-color="#f7fcff"/><stop offset="1" stop-color="#d4e8f3"/>
+          </linearGradient>
+          <linearGradient id="cloud-dove-wing" x1=".2" y1="0" x2=".8" y2="1">
+            <stop offset="0" stop-color="#ffffff"/><stop offset=".68" stop-color="#f7fcff"/><stop offset="1" stop-color="#c9e0ef"/>
+          </linearGradient>
+          <linearGradient id="cloud-dove-far" x1="0" y1="0" x2=".75" y2="1">
+            <stop offset="0" stop-color="#f8fdff"/><stop offset="1" stop-color="#bdd9eb"/>
+          </linearGradient>
+          <linearGradient id="cloud-letter-paper" x1="0" y1="0" x2=".8" y2="1">
+            <stop offset="0" stop-color="#fffcf3"/><stop offset="1" stop-color="#ebdfd0"/>
+          </linearGradient>
         </defs>
-        <g stroke-linejoin="round">
-          <path fill="#d5e8f1" d="M76 62Q54 39 55 12Q81 32 96 53Z"/>
-          <path fill="url(#body-light)" d="M52 57Q30 52 12 59L34 66 23 77 58 68Q79 85 101 68Q114 59 117 45Q120 32 132 34Q142 36 140 45L132 49Q132 64 114 77Q88 94 63 78Q54 71 52 57Z"/>
-          <g class="dove-wing">
-            <path fill="url(#feather-light)" d="M91 67Q62 70 44 48Q27 27 17 8Q31 18 43 21L35 6Q50 16 59 27L55 11Q75 28 85 44Q96 49 99 57Q100 63 91 67Z"/>
-            <path d="M38 22Q51 46 73 57M51 28Q65 47 83 57M64 34Q76 49 90 55" stroke="#b8d6e6" stroke-width="1.2" fill="none" opacity=".74"/>
-          </g>
-          <path fill="#d2aa86" d="M139 40l10 4-10 4Z"/>
-          <circle cx="132" cy="39" r="1.65" fill="#5e7987"/>
-          <path d="M145 46q-2 5-8 8" fill="none" stroke="#b0c4ce" stroke-width="1.2"/>
-          <g transform="translate(117 52) rotate(7)">
-            <rect width="29" height="20" rx="1.8" fill="#fffdf7" stroke="#b8cbd5" stroke-width="1"/>
-            <path d="M1 1l13.5 11L28 1M1 19l9-8m18 8-9-8" fill="none" stroke="#b5c6ce" stroke-width="1"/>
-            <circle cx="14.5" cy="11" r="2.6" fill="#cf9a90"/>
-          </g>
+        <!-- Far wing, a softly folded silhouette behind the body. -->
+        <g class="dove-far-wing">
+          <path fill="url(#cloud-dove-far)" d="M96 56C85 35 86 19 103 7Q105 17 102 25Q111 19 114 18Q113 32 107 40Q113 36 117 35Q115 49 102 60Z"/>
+          <path d="M100 47Q99 31 103 22M104 51Q111 43 113 39" fill="none" stroke="#b6d6e8" stroke-width=".8" opacity=".65" stroke-linecap="round"/>
+        </g>
+        <!-- Fan-shaped tail and streamlined breast, neck and rounded head. -->
+        <path fill="url(#cloud-dove-far)" d="M63 58C44 60 22 61 9 53Q13 61 24 66L8 67Q17 75 32 75L19 80Q39 83 67 69Z"/>
+        <path d="M18 68Q39 73 58 64M29 77Q45 76 61 69" fill="none" stroke="#c3dce9" stroke-width=".9" stroke-linecap="round"/>
+        <path fill="url(#cloud-dove-body)" d="M47 61C62 48 85 47 103 51C109 49 113 43 116 35C119 27 128 25 134 30C139 33 141 39 138 45C135 48 131 49 130 53C128 65 117 74 103 78C81 85 61 76 47 68Q43 65 47 61Z"/>
+        <path d="M102 75Q119 68 124 56" fill="none" stroke="#c9e0ed" stroke-width="1.05" stroke-linecap="round" opacity=".75"/>
+        <!-- Near wing: long tapering primary feathers and shorter coverts. -->
+        <g class="dove-wing">
+          <path fill="url(#cloud-dove-wing)" d="M94 65C78 70 63 63 48 49C32 34 17 17 12 6C23 12 30 16 39 22C33 14 30 8 29 4C39 11 48 20 56 28C51 18 49 13 50 9C65 19 73 28 80 36Q92 42 100 55C103 61 101 64 94 65Z"/>
+          <path fill="#fff" opacity=".56" d="M16 10C38 28 56 50 75 59C59 57 44 45 31 29Z"/>
+          <path fill="#f8fcff" d="M36 13C50 28 64 42 84 55C71 53 56 42 48 31Z"/>
+          <path fill="#fff" opacity=".77" d="M56 17C72 29 86 42 93 53C85 51 73 43 65 33Z"/>
+          <path fill="#f4faff" opacity=".9" d="M63 44Q83 43 97 57Q100 63 89 64Q73 64 63 55Z"/>
+          <path d="M39 24Q53 42 78 57M57 29Q70 45 86 54M72 39Q86 47 93 55M68 49Q78 56 88 57" fill="none" stroke="#b8d5e7" stroke-width=".85" opacity=".64" stroke-linecap="round"/>
+        </g>
+        <!-- Tiny beak, eye, and a letter held by its upper corner. -->
+        <path fill="#cbb099" d="M138 36Q146 37 150 40L139 43Z"/>
+        <ellipse cx="132.4" cy="35.4" rx="1.8" ry="1.6" fill="#526f7e"/>
+        <circle cx="132.9" cy="34.9" r=".5" fill="#fff"/>
+        <path d="M147 41Q149 46 144 51" fill="none" stroke="#c3c4bc" stroke-width="1.05" stroke-linecap="round"/>
+        <g transform="translate(126 49) rotate(12)">
+          <rect width="23" height="16" rx="1.3" fill="url(#cloud-letter-paper)" stroke="#b6c5cd" stroke-width=".7"/>
+          <path d="M.7 .7L11.5 9.4 22.3 .7M.7 15.3L8.1 8M22.3 15.3L14.9 8" fill="none" stroke="#b9bcb6" stroke-width=".8" stroke-linejoin="round"/>
+          <circle cx="11.5" cy="9" r="2.3" fill="#cb958d"/>
+          <circle cx="11.2" cy="8.6" r=".7" fill="#e7b6aa" opacity=".8"/>
         </g>
       </svg>
     </div>
