@@ -1,4 +1,4 @@
-/** Cloud Typography v1.5 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v1.6 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -9,6 +9,15 @@
   const windRange = document.getElementById('wind-range');
   const chaosRange = document.getElementById('chaos-range');
   const radiusRange = document.getElementById('radius-range');
+  const speedRange = document.getElementById('speed-range');
+  const speedValue = document.getElementById('speed-value');
+  const timeline = document.getElementById('timeline-range');
+  const timeValue = document.getElementById('time-value');
+  const takeStatus = document.getElementById('take-status');
+  const playButton = document.getElementById('play-button');
+  const replayButton = document.getElementById('replay-button');
+  const liveButton = document.getElementById('live-button');
+  const zoomValue = document.getElementById('zoom-value');
   const windValue = document.getElementById('wind-value');
   const chaosValue = document.getElementById('chaos-value');
   const radiusValue = document.getElementById('radius-value');
@@ -16,7 +25,7 @@
   const resetButton = document.getElementById('reset-button');
   const status = document.getElementById('live-status');
   const messenger = document.getElementById('messenger');
-  if (!sky || !paragraph || !canvas || !windRange || !chaosRange || !radiusRange || !radiusValue || !resetButton) return;
+  if (!sky || !paragraph || !canvas || !windRange || !chaosRange || !radiusRange || !radiusValue || !speedRange || !speedValue || !timeline || !playButton || !replayButton || !liveButton || !resetButton) return;
   const ctx = canvas.getContext('2d', {alpha:true});
   if (!ctx) return;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -31,6 +40,13 @@
   const random = v => { const f = Math.sin(v * 117.17 + 29.3) * 43758.5; return f - Math.floor(f); };
   let wind = +windRange.value;
   let disorder = +chaosRange.value / 100;
+  let chaosSpeed = +speedRange.value;
+  let chaosClock=0, cameraZoom=1;
+  // Record actual rendered simulation states, not a screen recording.
+  const MAX_TAKE=180000, SAMPLE=67;
+  const frames=[];
+  let mode='live', playhead=0, lastSample=-Infinity, playbackLast=0;
+  let simNow=performance.now();
   let radiusSetting = +radiusRange.value;
   let start = performance.now();
   let vw = window.innerWidth, vh = window.innerHeight, dpr = 1;
@@ -127,13 +143,13 @@
     return {selected,rect};
   }
   function dissolve(item, options={}) {
-    if (!item || item.gone || effects.has(item.index)) return;
+    if (mode!=='live' || !item || item.gone || effects.has(item.index)) return;
     if (reduced.matches) { item.gone=true; item.el.classList.add('gone'); item.el.tabIndex=-1; return; }
-    const now = performance.now();
+    const now = simNow;
     const {selected,rect} = glyphPoints(item, options.mass ? 14 : 55);
     const cx = rect.left+rect.width/2, cy=rect.top+rect.height/2;
     const particles=[]; const seed=item.index*11.37;
-    const strength=.78+wind*.16;
+    const strength=options.flow ? .32+wind*.17 : 1.05;
     const flow=options.flow || {x:.96,y:-.27};
     const norm=Math.max(.001,Math.hypot(flow.x,flow.y));
     const flowX=flow.x/norm,flowY=flow.y/norm;
@@ -150,10 +166,10 @@
       const base=particles[(i*5)%particles.length];
       particles.push({...base,radius:17+random(i+seed)*19,alpha:.08+random(i*2.7+seed)*.13,soft:true});
     }
-    effects.set(item.index,{item,start:now+(options.delay||0),duration:2200+random(seed)*1100,particles,hidden:false});
+    effects.set(item.index,{item,start:now+(options.delay||0),duration:2200+random(seed)*1100,particles,hidden:false,zoom:cameraZoom});
   }
   function gust() {
-    if (gusting) return;
+    if (mode!=='live' || gusting) return;
     gusting=true;
     const available=letters.filter(x=>!x.gone&&!effects.has(x.index));
     available.forEach((item,i)=>dissolve(item,{mass:true,delay:i*14+random(item.index*2.1)*280}));
@@ -199,12 +215,12 @@
   // -------- Press and hold to create a local, directional wind field --------
   // Mouse drag steers the gust. Staying in one place produces a rightward breeze.
   function handlePointerDown(e) {
-    if (press.active || !e.isPrimary || (e.pointerType==='mouse' && e.button!==0)) return;
+    if (mode!=='live' || press.active || !e.isPrimary || (e.pointerType==='mouse' && e.button!==0)) return;
     if(e.target.closest?.('.bottom-bar,.masthead,button,input,label')) return;
     press.active=true; press.id=e.pointerId;
     press.downX=press.lastX=press.x=e.clientX;
     press.downY=press.lastY=press.y=e.clientY;
-    press.downAt=press.lastAt=performance.now();
+    press.downAt=simNow;press.lastAt=performance.now();
     press.triggered=false; press.dirX=.94;press.dirY=-.34;
   }
   function handlePointerMove(e) {
@@ -252,7 +268,7 @@
         const unit=Math.max(.001,Math.hypot(press.dirX,press.dirY));
         field.dirX=press.dirX/unit;field.dirY=press.dirY/unit;
         field.x=press.x;field.y=press.y;
-        field.strength=.35+2.2*smooth((held-180)/1700);
+        field.strength=(.32+2.2*smooth((held-180)/1250))*wind/4;
         // The slider controls both the wake width and the local wind reach.
         field.radius=radiusSetting;
       }
@@ -264,18 +280,19 @@
       if(field.strength<.012)field.strength=0;
     }
     if(messenger){
-      const visible=!reduced.matches && field.strength>.012;
-      messenger.style.opacity=visible?String(Math.min(1,field.strength*1.3)):'0';
+      const visible=!reduced.matches && ((press.active&&press.triggered)||field.strength>.012);
+      messenger.style.opacity=visible?String(press.active&&press.triggered?1:Math.min(1,field.strength*1.3)):'0';
       if(visible){
         const angle=Math.atan2(field.dirY,field.dirX)*180/Math.PI;
         const flip=field.dirX<0;
         const tilt=flip?angle-(angle>0?180:-180):angle;
-        const w=vw<=520?100:135,h=vw<=520?67:90;
+        const w=vw<=520?57:76,h=vw<=520?38:51;
         messenger.style.transform=`translate3d(${(field.x-w/2).toFixed(1)}px,${(field.y-h/2).toFixed(1)}px,0) rotate(${tilt.toFixed(1)}deg) scaleX(${flip?-1:1})`;
       }
     }
-    if(field.strength>.04 && !reduced.matches && now-lastEmission>55){
-      stream.push({x:field.x,y:field.y,dx:field.dirX,dy:field.dirY,r:field.radius,power:Math.min(1,field.strength),start:now});
+    document.documentElement.style.setProperty('--wing-angle',`${Math.sin(now*.012)*12}deg`);
+    if(field.strength>.04 && !reduced.matches && now-lastEmission>Math.max(24,70-wind*2)){
+      stream.push({x:field.x,y:field.y,dx:field.dirX,dy:field.dirY,r:field.radius,power:Math.min(1,field.strength),speed:wind,start:now});
       lastEmission=now;
       if(stream.length>36)stream.shift();
     }
@@ -329,13 +346,13 @@
     gust();
   });
   // A fading directional wake, rather than a circular UI indicator.
-  function drawStream(now) {
-    for(let i=stream.length-1;i>=0;i--){
-      const s=stream[i],t=(now-s.start)/1000;
-      if(t>=1){stream.splice(i,1);continue;}
+  function drawStream(now,history=stream) {
+    for(let i=history.length-1;i>=0;i--){
+      const s=history[i],t=(now-s.start)/1000;
+      if(t>=1){if(history===stream)stream.splice(i,1);continue;}
       const fade=(1-t)*(1-t)*s.power;
       const nx=-s.dy,ny=s.dx;
-      const tail=s.r*(.8+t*.8);
+      const tail=s.r*(.65+t*(.6+(s.speed||4)*.065));
       const x=s.x-s.dx*(18+t*65),y=s.y-s.dy*(18+t*65);
       ctx.save();
       ctx.lineCap='round';
@@ -357,43 +374,126 @@
       ctx.restore();
     }
   }
-  function particlesFrame(now) {
+  function particlesFrame(now,snapshot=null) {
     ctx.clearRect(0,0,vw,vh);
-    drawStream(now);
+    drawStream(now,snapshot?snapshot.stream:stream);
     const px=vw*.5,py=vh*.5;
-    for (const [key,effect] of effects) {
+    const bounds=paragraph.closest('.composition').getBoundingClientRect();
+    const anchorX=bounds.left+bounds.width/2,anchorY=bounds.top+bounds.height/2;
+    for (const [key,effect] of (snapshot?snapshot.effects:effects)) {
       const age=now-effect.start;
       if(age<0)continue;
-      if(!effect.hidden) {
+      if(!snapshot && !effect.hidden) {
         effect.hidden=true; effect.item.gone=true;
         effect.item.el.classList.add('gone'); effect.item.el.tabIndex=-1;
       }
       const t=age/effect.duration;
-      if(t>=1) {effects.delete(key);continue;}
+      if(t>=1) {if(!snapshot)effects.delete(key);continue;}
       const e=smooth(t), alpha=Math.pow(1-e,.7);
       for(const p of effect.particles){
         const depth=p.depth*e;
         const perspective=clamp(900/(900-depth),.75,1.35);
         const cx=p.x+p.dx*e+Math.sin(now*.0011+p.phase+e*4)*p.curl*e;
         const cy=p.y+p.dy*e+Math.cos(now*.0009+p.phase)*19*e;
-        const x=px+(cx-px)*perspective;
-        const y=py+(cy-py)*perspective;
-        const radius=p.radius*(1+e*(p.soft?1.85:1.20))*perspective;
+        const ratio=cameraZoom/(effect.zoom||1);
+        const x=anchorX+(px+(cx-px)*perspective-anchorX)*ratio;
+        const y=anchorY+(py+(cy-py)*perspective-anchorY)*ratio;
+        const radius=p.radius*(1+e*(p.soft?1.85:1.20))*perspective*ratio;
         ctx.globalAlpha=p.alpha*alpha*(p.soft?.74:1);
         ctx.drawImage(p.soft?mistStrand:mistDot,x-radius,y-radius,radius*2,radius*2);
       }
     }
     ctx.globalAlpha=1;
   }
-  function animate(now) {
-    const dt=clamp(now-previousTick,0,45);previousTick=now;
-    if (!document.hidden) {
+  function applyZoom(value) {
+    cameraZoom=clamp(value,.65,1.85);
+    document.documentElement.style.setProperty('--camera-zoom',cameraZoom.toFixed(3));
+    zoomValue.textContent=Math.round(cameraZoom*100)+'%';
+  }
+  function formatTime(ms){const sec=Math.floor(ms/1000);return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');}
+  function syncTransport(){
+    const duration=frames.length?frames[frames.length-1].t:0;
+    timeline.max=String(Math.round(duration));
+    timeline.value=String(Math.round(mode==='live'?duration:playhead));
+    timeValue.textContent=formatTime(mode==='live'?duration:playhead)+' / '+formatTime(duration);
+    takeStatus.textContent=mode==='live'?'● 正在记录本轮':mode==='replay'?'▶ 正在回放':duration>=MAX_TAKE?'本轮已达 3 分钟上限':'Ⅱ 已暂停 · 可拖动时间轴';
+    playButton.textContent=mode==='live'||mode==='replay'?'Ⅱ 暂停':'▶ 播放';
+    liveButton.disabled=mode==='live'||duration>=MAX_TAKE;
+    replayButton.disabled=frames.length<2;
+    playButton.disabled=mode==='paused'&&frames.length<2;
+    for(const el of [windRange,speedRange,chaosRange,radiusRange,gustButton,document.getElementById('zoom-in'),document.getElementById('zoom-out')])el.disabled=mode!=='live';
+  }
+  function capture(force=false){
+    const t=Math.max(0,simNow-start);
+    if(!force&&t-lastSample<SAMPLE)return;
+    lastSample=t;
+    frames.push({t,now:simNow,zoom:cameraZoom,transforms:letters.map(i=>i.el.style.transform),gone:Uint8Array.from(letters,i=>+i.gone),effects:Array.from(effects),stream:stream.slice(),
+      birdTransform:messenger.style.transform,birdOpacity:messenger.style.opacity,wing:document.documentElement.style.getPropertyValue('--wing-angle'),
+      controls:[windRange.value,speedRange.value,chaosRange.value,radiusRange.value]});
+    syncTransport();
+  }
+  function showFrame(frame,interactive=false){
+    if(!frame)return;
+    applyZoom(frame.zoom);
+    for(let i=0;i<letters.length;i++){const el=letters[i].el;el.style.transform=frame.transforms[i];el.classList.toggle('gone',!!frame.gone[i]);el.tabIndex=interactive&&!frame.gone[i]?0:-1;}
+    messenger.style.transform=frame.birdTransform;messenger.style.opacity=frame.birdOpacity;
+    document.documentElement.style.setProperty('--wing-angle',frame.wing);
+    [windRange,speedRange,chaosRange,radiusRange].forEach((el,i)=>el.value=frame.controls[i]);
+    windValue.textContent=windRange.value;speedValue.textContent=Number(speedRange.value).toFixed(1)+'×';chaosValue.textContent=chaosRange.value+'%';radiusValue.textContent=radiusRange.value;
+    particlesFrame(frame.now,frame);
+  }
+  function frameAt(time){
+    let lo=0,hi=frames.length-1;
+    while(lo<hi){const mid=Math.ceil((lo+hi)/2);if(frames[mid].t<=time)lo=mid;else hi=mid-1;}
+    return frames[lo];
+  }
+  function freeze(){
+    if(mode==='live'){press.active=false;press.id=null;capture(true);playhead=frames[frames.length-1].t;}
+    mode='paused';document.documentElement.classList.add('take-paused');showFrame(frameAt(playhead));syncTransport();
+  }
+  function playback(fromStart=false){
+    if(mode==='live')freeze();
+    if(frames.length<2)return;
+    const end=frames[frames.length-1].t;
+    if(fromStart||playhead>=end-1)playhead=0;
+    mode='replay';playbackLast=performance.now();showFrame(frameAt(playhead));syncTransport();
+  }
+  function readControls(){wind=+windRange.value;chaosSpeed=+speedRange.value;disorder=+chaosRange.value/100;radiusSetting=+radiusRange.value;field.radius=radiusSetting;}
+  function returnLive(){
+    if(mode==='live'||!frames.length||frames[frames.length-1].t>=MAX_TAKE)return;
+    const tail=frames[frames.length-1];showFrame(tail,true);readControls();
+    playhead=tail.t;mode='live';document.documentElement.classList.remove('take-paused');previousTick=performance.now();syncTransport();
+  }
+  timeline.addEventListener('input',()=>{const wanted=Number(timeline.value);if(mode==='live')freeze();mode='paused';playhead=clamp(wanted,0,frames[frames.length-1]?.t||0);showFrame(frameAt(playhead));syncTransport();});
+  playButton.addEventListener('click',()=>{if(mode==='live'||mode==='replay')freeze();else playback();});
+  replayButton.addEventListener('click',()=>playback(true));
+  liveButton.addEventListener('click',returnLive);
+  document.getElementById('zoom-in').addEventListener('click',()=>{if(mode==='live')applyZoom(cameraZoom+.1);});
+  document.getElementById('zoom-out').addEventListener('click',()=>{if(mode==='live')applyZoom(cameraZoom-.1);});
+  sky.addEventListener('wheel',ev=>{
+    if(ev.target.closest?.('.bottom-bar,.masthead')||ev.ctrlKey||mode!=='live')return;
+    ev.preventDefault();const dy=ev.deltaY*(ev.deltaMode===1?16:ev.deltaMode===2?vh:1);
+    applyZoom(cameraZoom*Math.exp(-clamp(dy,-350,350)*.0014));
+  },{passive:false});
+  function animate(realNow) {
+    const dt=clamp(realNow-previousTick,0,45);previousTick=realNow;
+    if(mode==='replay'&&!document.hidden){
+      const elapsed=clamp(realNow-playbackLast,0,100);playbackLast=realNow;
+      playhead=Math.min(frames[frames.length-1].t,playhead+elapsed);
+      showFrame(frameAt(playhead));
+      if(playhead>=frames[frames.length-1].t)mode='paused';
+      syncTransport();
+    }
+    if(mode==='live'&&!document.hidden) {
+      simNow+=dt;const now=simNow;
+      chaosClock+=dt*chaosSpeed;
       updateLocalWind(now,dt);
       const elapsed=now-start;
-      const chaos=disorder*smooth((elapsed-3300)/30000);
-      const calm=.10+.90*smooth((elapsed-900)/15000);
+      const chaos=disorder*smooth(chaosClock/30000);
+      const calm=.10+.90*smooth((elapsed-900)/12000);
       const stageScale=clamp(vw/1080,.42,1);
-      const breeze=wind/3*stageScale;
+      const breeze=stageScale;
+      const motionTime=chaosClock;
       if(reduced.matches){
         for(const item of letters) if(!item.gone) item.el.style.transform='';
       } else {
@@ -403,38 +503,42 @@
           const x=item.x*.012,y=item.y*.011,k=item.index;
           const sharedX = Math.sin(elapsed*.00026+x*.45+y*.18)*9 + Math.sin(elapsed*.00013+x*.33)*8;
           const sharedY = Math.cos(elapsed*.00024+y*.37+x*.18)*5;
-          const dx=(sharedX + Math.sin(elapsed*.00037+x+k*.12)*5 + (item.biasX*49+Math.sin(elapsed*.00014+k*.17)*17)*chaos)*breeze*calm;
-          const dy=(sharedY + Math.sin(elapsed*.00033+y+k*.1)*5 + (item.biasY*42+Math.cos(elapsed*.00016+k*.19)*15)*chaos)*breeze*calm;
-          const z=(item.zSeed*12 + Math.sin(elapsed*.00025+x*.41+k*.08)*9 + item.zSeed*55*chaos)*breeze*calm;
-          const rz=(Math.sin(elapsed*.0002+k*.13)*1.3+item.biasX*20*chaos)*breeze*calm;
-          const rx=(item.biasY*6*chaos+Math.sin(elapsed*.00024+k*.18)*2)*breeze*calm;
-          const ry=(item.zSeed*10*chaos+Math.cos(elapsed*.00019+k*.12)*3)*breeze*calm;
+          const dx=(sharedX + Math.sin(elapsed*.00037+x+k*.12)*5 + (item.biasX*49+Math.sin(motionTime*.00014+k*.17)*21)*chaos)*breeze;
+          const dy=(sharedY + Math.sin(elapsed*.00033+y+k*.1)*5 + (item.biasY*42+Math.cos(motionTime*.00016+k*.19)*19)*chaos)*breeze;
+          const z=(item.zSeed*12 + Math.sin(elapsed*.00025+x*.41+k*.08)*9 + item.zSeed*55*chaos)*breeze;
+          const rz=(Math.sin(elapsed*.0002+k*.13)*1.3+item.biasX*28*chaos)*breeze;
+          const rx=(item.biasY*8*chaos+Math.sin(elapsed*.00024+k*.18)*2)*breeze;
+          const ry=(item.zSeed*12*chaos+Math.cos(elapsed*.00019+k*.12)*3)*breeze;
           const px=dx+item.gustX,py=dy+item.gustY,pz=z+item.gustZ;
           const impulseAngle=clamp(item.gustVX*.022,-11,11);
           item.el.style.transform=`translate3d(${px.toFixed(1)}px,${py.toFixed(1)}px,${pz.toFixed(1)}px) rotateX(${rx.toFixed(1)}deg) rotateY(${ry.toFixed(1)}deg) rotateZ(${(rz+impulseAngle).toFixed(1)}deg)`;
         }
       }
       if (effects.size || stream.length) particlesFrame(now);
+      capture();
+      if(simNow-start>=MAX_TAKE)freeze();
     }
     requestAnimationFrame(animate);
   }
-  windRange.addEventListener('input',()=>{wind=+windRange.value;windValue.textContent=String(wind).padStart(2,'0');});
-  chaosRange.addEventListener('input',()=>{disorder=+chaosRange.value/100;chaosValue.textContent=String(chaosRange.value).padStart(2,'0');});
+  windRange.addEventListener('input',()=>{wind=+windRange.value;windValue.textContent=String(wind);});
+  chaosRange.addEventListener('input',()=>{disorder=+chaosRange.value/100;chaosValue.textContent=chaosRange.value+'%';});
+  speedRange.addEventListener('input',()=>{chaosSpeed=+speedRange.value;speedValue.textContent=chaosSpeed.toFixed(1)+'×';});
   radiusRange.addEventListener('input',()=>{radiusSetting=+radiusRange.value;field.radius=radiusSetting;radiusValue.textContent=String(radiusSetting);});
   resetButton.addEventListener('click',()=>{
-    effects.clear();gusting=false;start=performance.now();
+    effects.clear();gusting=false;mode='live';document.documentElement.classList.remove('take-paused');readControls();start=simNow;chaosClock=0;frames.length=0;lastSample=-Infinity;playhead=0;previousTick=performance.now();
     press.active=false;press.id=null;field.strength=0;field.x=-1000;field.y=-1000;
     stream.length=0; lastEmission=0;
     if(messenger)messenger.style.opacity='0';
     for(const item of letters){item.gone=false;item.el.classList.remove('gone');item.el.tabIndex=0;item.el.style.transform='';item.gustX=item.gustY=item.gustZ=item.gustVX=item.gustVY=item.pressDose=0;}
-    ctx.clearRect(0,0,vw,vh); if(status)status.textContent='天空重新开始，所有字母已恢复。';
+    ctx.clearRect(0,0,vw,vh);applyZoom(cameraZoom);capture(true);if(status)status.textContent='新一轮开始，所有字母已恢复。';
   });
   window.addEventListener('resize',resize,{passive:true});
-  reduced.addEventListener?.('change',()=>{start=performance.now();field.strength=0;});
+  reduced.addEventListener?.('change',()=>{field.strength=0;});
   document.addEventListener('visibilitychange',()=>{previousTick=performance.now();if(document.hidden){press.active=false;press.id=null;field.strength=0;stream.length=0;ctx.clearRect(0,0,vw,vh);if(messenger)messenger.style.opacity='0';}});
-  build(); resize();
-  windValue.textContent=String(wind).padStart(2,'0');
-  chaosValue.textContent=String(chaosRange.value).padStart(2,'0');
+  build(); resize();start=simNow;
+  windValue.textContent=String(wind);
+  chaosValue.textContent=chaosRange.value+'%';speedValue.textContent=chaosSpeed.toFixed(1)+'×';
   radiusValue.textContent=String(radiusSetting);
+  applyZoom(1);capture(true);
   requestAnimationFrame(animate);
 })();

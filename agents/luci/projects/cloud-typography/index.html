@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#85c5e5">
   <meta name="description" content="Cloud Typography — a letter from the sky, drifting into cloud and wind.">
   <title>Cloud Typography · 云中来信</title>
-  <link rel="stylesheet" href="./style.css">
-  <script src="./script.js" defer></script>
+  <link rel="stylesheet" href="./style.css?v=1.6">
+  <script src="./script.js?v=1.6" defer></script>
 </head>
 <body>
   <main class="sky" id="sky">
@@ -32,35 +32,47 @@
     <canvas id="mist-canvas" aria-hidden="true"></canvas>
     <div id="messenger" class="messenger" aria-hidden="true">
       <svg viewBox="0 0 150 100" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
+        <defs>
+          <linearGradient id="feather-light" x1="0" y1="0" x2=".5" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#dcecf5"/></linearGradient>
+          <linearGradient id="body-light" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#e2f0f7"/></linearGradient>
+        </defs>
         <g stroke-linejoin="round">
-          <path fill="#dcecf4" d="M69 57C53 43 42 30 39 14c15 9 35 14 51 39Z"/>
-          <path fill="#f7fcff" d="M53 62C37 58 20 58 8 63l23 9-8 9 34-7c12 9 30 8 42 1 9-5 14-13 17-24 3-7 9-12 17-11 6 0 10 4 11 9l-10 5c-4 19-19 36-46 38-20 2-35-8-35-30Z"/>
+          <path fill="#d5e8f1" d="M76 62Q54 39 55 12Q81 32 96 53Z"/>
+          <path fill="url(#body-light)" d="M52 57Q30 52 12 59L34 66 23 77 58 68Q79 85 101 68Q114 59 117 45Q120 32 132 34Q142 36 140 45L132 49Q132 64 114 77Q88 94 63 78Q54 71 52 57Z"/>
           <g class="dove-wing">
-            <path fill="#fff" d="M82 73C54 67 38 48 21 19c15 8 20 9 28 9L43 12c12 9 20 15 28 24L69 19c12 15 20 25 23 40 1 6-3 11-10 14Z"/>
-            <path fill="none" stroke="#c5e0ee" stroke-width="1.1" opacity=".75" d="M47 32c8 10 17 19 31 27M57 36c7 11 16 19 24 24"/>
+            <path fill="url(#feather-light)" d="M91 67Q62 70 44 48Q27 27 17 8Q31 18 43 21L35 6Q50 16 59 27L55 11Q75 28 85 44Q96 49 99 57Q100 63 91 67Z"/>
+            <path d="M38 22Q51 46 73 57M51 28Q65 47 83 57M64 34Q76 49 90 55" stroke="#b8d6e6" stroke-width="1.2" fill="none" opacity=".74"/>
           </g>
-          <path fill="#e8cf9f" d="M140 47l9 4-9 3z"/>
-          <circle cx="135" cy="45" r="1.4" fill="#638399"/>
-          <g transform="translate(111 57) rotate(-8)">
-            <path fill="#eff8fc" stroke="#a4c6d8" stroke-width=".7" d="M0 0h28v19H0z"/>
-            <path fill="none" stroke="#a4c6d8" stroke-width=".9" d="m0 0 14 11L28 0M0 19l10-8m18 8L18 11"/>
-            <circle cx="14" cy="10" r="2.4" fill="#cf998e"/>
+          <path fill="#d2aa86" d="M139 40l10 4-10 4Z"/>
+          <circle cx="132" cy="39" r="1.65" fill="#5e7987"/>
+          <path d="M145 46q-2 5-8 8" fill="none" stroke="#b0c4ce" stroke-width="1.2"/>
+          <g transform="translate(117 52) rotate(7)">
+            <rect width="29" height="20" rx="1.8" fill="#fffdf7" stroke="#b8cbd5" stroke-width="1"/>
+            <path d="M1 1l13.5 11L28 1M1 19l9-8m18 8-9-8" fill="none" stroke="#b5c6ce" stroke-width="1"/>
+            <circle cx="14.5" cy="11" r="2.6" fill="#cf9a90"/>
           </g>
         </g>
       </svg>
     </div>
 
     <footer class="bottom-bar">
-      <div class="hint"><span class="hint-symbol" aria-hidden="true">✧</span> 轻点字母吹散 · 长按唤来白鸽，拖动带起气流</div>
+      <div class="studio-top">
+        <div class="hint"><span class="hint-symbol" aria-hidden="true">✧</span> 点击字母 · 长按召唤白鸽 · 滚轮拉近或拉远</div>
+        <div class="camera-controls"><button id="zoom-out" type="button" aria-label="拉远镜头">−</button><output id="zoom-value">100%</output><button id="zoom-in" type="button" aria-label="拉近镜头">+</button></div>
+      </div>
       <div class="controls">
-        <label for="wind-range" title="常风：文字平时漂浮和消散时的风力">WIND <span class="control-zh">常风</span> <output id="wind-value">03</output></label>
-        <input id="wind-range" type="range" min="0" max="6" step="1" value="3" aria-label="常风强度，控制文字自然漂浮与消散的风力" title="0—6，控制全局的柔风">
-        <label for="chaos-range" title="失序：控制字母随时间偏离整齐排版的程度">DISORDER <span class="control-zh">失序</span> <output id="chaos-value">70</output></label>
-        <input id="chaos-range" type="range" min="0" max="100" step="5" value="70" aria-label="失序程度，控制字母漂移和旋转的混乱程度" title="0—100，控制自然失序的幅度">
-        <label for="radius-range" title="风程：白鸽带起的局部气流范围">REACH <span class="control-zh">风程</span> <output id="radius-value">200</output></label>
-        <input id="radius-range" type="range" min="80" max="340" step="10" value="200" aria-label="白鸽带起的气流范围，单位像素" title="80—340 像素，调整气流的宽度与受风范围">
-        <button id="gust-button" type="button">吹散整段 <span aria-hidden="true">↗</span></button>
-        <button id="reset-button" type="button">重新开始 <span aria-hidden="true">↺</span></button>
+        <div class="parameter"><label for="wind-range" title="白鸽带起的风力与云絮飘散速度">鸽翼风速 <output id="wind-value">4</output></label><input id="wind-range" type="range" min="0" max="20" step="1" value="4"></div>
+        <div class="parameter"><label for="speed-range" title="文字从整齐过渡到混乱的速度">混乱速度 <output id="speed-value">1.0×</output></label><input id="speed-range" type="range" min="0" max="12" step=".5" value="1"></div>
+        <div class="parameter"><label for="chaos-range" title="字母最大位移、旋转和纵深变化">混乱程度 <output id="chaos-value">70%</output></label><input id="chaos-range" type="range" min="0" max="400" step="10" value="70"></div>
+        <div class="parameter reach-parameter"><label for="radius-range" title="白鸽气流的影响范围">气流范围 <output id="radius-value">200</output></label><input id="radius-range" type="range" min="60" max="360" step="10" value="200"></div>
+        <button id="gust-button" type="button">吹散整段 ↗</button>
+      </div>
+      <div class="transport">
+        <button id="play-button" type="button">Ⅱ 暂停</button>
+        <button id="replay-button" type="button" aria-label="从头回放">⟲ 回放</button>
+        <div class="timeline"><div class="timeline-caption"><span id="take-status">● 正在记录本轮</span><output id="time-value">0:00 / 0:00</output></div><input id="timeline-range" type="range" min="0" max="0" value="0" step="1" aria-label="本轮动画回放进度"></div>
+        <button id="live-button" type="button" disabled>继续创作</button>
+        <button id="reset-button" type="button">新一轮 ↺</button>
       </div>
     </footer>
     <div class="sr-only" id="live-status" aria-live="polite" aria-atomic="true"></div>
