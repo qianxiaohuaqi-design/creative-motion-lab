@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#85c5e5">
   <meta name="description" content="Cloud Typography — a letter from the sky, drifting into cloud and wind.">
   <title>Cloud Typography · 云中来信</title>
-  <link rel="stylesheet" href="./style.css?v=2.0">
-  <script src="./script.js?v=2.0" defer></script>
+  <link rel="stylesheet" href="./style.css?v=2.1">
+  <script src="./script.js?v=2.1" defer></script>
 </head>
 <body>
   <main class="sky" id="sky">
@@ -58,10 +58,12 @@
           <path d="M100 47Q99 31 103 22M104 51Q111 43 113 39" fill="none" stroke="#b6d6e8" stroke-width=".8" opacity=".65" stroke-linecap="round"/>
         </g>
         <!-- Fan-shaped tail and streamlined breast, neck and rounded head. -->
-        <path fill="url(#cloud-dove-far)" d="M63 58C44 60 22 61 9 53Q13 61 24 66L8 67Q17 75 32 75L19 80Q39 83 67 69Z"/>
-        <path d="M18 68Q39 73 58 64M29 77Q45 76 61 69" fill="none" stroke="#c3dce9" stroke-width=".9" stroke-linecap="round"/>
+        <g class="dove-tail">
+          <path fill="url(#cloud-dove-far)" d="M63 58C44 60 22 61 9 53Q13 61 24 66L8 67Q17 75 32 75L19 80Q39 83 67 69Z"/>
+          <path d="M18 68Q39 73 58 64M29 77Q45 76 61 69" fill="none" stroke="#c3dce9" stroke-width=".9" stroke-linecap="round"/>
+        </g>
         <path fill="url(#cloud-dove-body)" d="M47 61C62 48 85 47 103 51C109 49 113 43 116 35C119 27 128 25 134 30C139 33 141 39 138 45C135 48 131 49 130 53C128 65 117 74 103 78C81 85 61 76 47 68Q43 65 47 61Z"/>
-        <path fill="url(#cloud-dove-head)" d="M112 47C115 42 115 34 121 30C128 25 136 29 139 36C141 43 136 48 132 50L129 56C123 52 117 50 112 47Z"/>
+        <!-- The head moves together with its eye and beak, never as detached shapes. -->
         <path d="M102 75Q119 68 124 56" fill="none" stroke="#a8c9db" stroke-width="1.05" stroke-linecap="round" opacity=".58"/>
         <path d="M69 53Q87 49 102 54" fill="none" stroke="#fff" stroke-width="2.3" opacity=".7" stroke-linecap="round"/>
         <!-- Near wing: long tapering primary feathers and shorter coverts. -->
@@ -74,11 +76,15 @@
           <path d="M39 24Q53 42 78 57M57 29Q70 45 86 54M72 39Q86 47 93 55M68 49Q78 56 88 57" fill="none" stroke="#b8d5e7" stroke-width=".85" opacity=".64" stroke-linecap="round"/>
         </g>
         <!-- Tiny beak, eye, and a letter held by its upper corner. -->
-        <path fill="#cbb099" d="M138 36Q146 37 150 40L139 43Z"/>
-        <ellipse cx="132.4" cy="35.4" rx="1.8" ry="1.6" fill="#526f7e"/>
-        <circle cx="132.9" cy="34.9" r=".5" fill="#fff"/>
-        <path d="M147 41Q148 44 146 47" fill="none" stroke="#b9b0a5" stroke-width="1.35" stroke-linecap="round"/>
-        <!-- Larger envelope, hinged at the corner nearest the beak; subtle paper thickness. -->
+        <g class="dove-head">
+          <path fill="url(#cloud-dove-head)" d="M112 47C115 42 115 34 121 30C128 25 136 29 139 36C141 43 136 48 132 50L129 56C123 52 117 50 112 47Z"/>
+          <path fill="#cbb099" d="M138 36Q146 37 150 40L139 43Z"/>
+          <ellipse cx="132.4" cy="35.4" rx="1.8" ry="1.6" fill="#526f7e"/>
+          <circle cx="132.9" cy="34.9" r=".5" fill="#fff"/>
+          <path d="M147 41Q148 44 146 47" fill="none" stroke="#b9b0a5" stroke-width="1.35" stroke-linecap="round"/>
+        </g>
+        <!-- The envelope sways independently of the wingbeat and keeps its beak hinge. -->
+        <g class="dove-envelope">
         <g transform="translate(146 47) rotate(-12) scale(1.68) translate(-23 0)">
           <rect x=".65" y="1.35" width="23" height="16" rx="1.5" fill="url(#cloud-letter-edge)"/>
           <rect width="23" height="16" rx="1.3" fill="url(#cloud-letter-paper)" stroke="#b7c4ca" stroke-width=".65"/>
@@ -86,6 +92,7 @@
           <path d="M.5 .7L11.5 10.1 22.5 .7" fill="#fffdf5" stroke="#c1bbae" stroke-width=".72" stroke-linejoin="round"/>
           <circle cx="11.5" cy="9.2" r="2.5" fill="#c1847b"/>
           <circle cx="11.2" cy="8.7" r=".85" fill="#efc1b2" opacity=".78"/>
+        </g>
         </g>
       </svg>
     </div>
@@ -103,10 +110,10 @@
         <div class="parameter"><label for="density-range" title="独立字母数量；更多文字会向画面四周铺展">文字数量 <output id="density-value">100%</output></label><input id="density-range" type="range" min="50" max="300" step="25" value="100"></div>
         <div class="parameter"><label for="bird-size-range" title="白鸽的屏幕尺寸，独立于滚轮镜头缩放">白鸽大小 <output id="bird-size-value">70px</output></label><input id="bird-size-range" type="range" min="30" max="180" step="5" value="70"></div>
         <div class="dove-mode" role="group" aria-label="白鸽与云字的互动模式">
-          <span class="dove-mode-label">白鸽模式</span>
+          <span class="dove-mode-label">白鸽模式 <span class="mode-note">拂云或吹散</span></span>
           <div class="dove-mode-switch">
-            <button id="dove-calm" type="button" aria-pressed="false" title="白鸽送信、留下云雾气流，但不推动或吹散字母">只送信</button>
-            <button id="dove-wind" type="button" aria-pressed="true" title="白鸽经过时推动字母，持续吹散成云雾">吹散云字</button>
+            <button id="dove-calm" type="button" aria-pressed="false" title="白鸽的气流持续扰动云字，使它们漂移、倾斜，但不会吹散或消失">只送信</button>
+            <button id="dove-wind" type="button" aria-pressed="true" title="白鸽的气流扰动云字，持续经过时会使字母散成云雾">吹散云字</button>
           </div>
         </div>
         <button id="gust-button" type="button">吹散整段 ↗</button>

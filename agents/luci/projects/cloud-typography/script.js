@@ -1,4 +1,4 @@
-/** Cloud Typography v2.0 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v2.1 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -153,14 +153,10 @@
     doveCalmButton.setAttribute('aria-pressed',String(!doveDisperses));
     doveWindButton.setAttribute('aria-pressed',String(doveDisperses));
     if(!doveDisperses){
-      // Stop old directional impulses immediately; keep existing disappeared letters gone.
-      for(const item of letters){
-        item.pressDose=0;
-        item.gustVX=item.gustVY=item.gustZ=0;
-        item.gustX=item.gustY=0;
-      }
+      // Clear only the dissolve charge. Existing wind displacement continues smoothly.
+      for(const item of letters)item.pressDose=0;
     }
-    if(status)status.textContent=doveDisperses?'白鸽将吹动并吹散经过的云字。':'白鸽只送信，气流不会推动或吹散字母。';
+    if(status)status.textContent=doveDisperses?'白鸽的气流会扰动并吹散云字。':'白鸽的气流会扰动云字，但不会使字母消失。';
   }
   doveCalmButton.addEventListener('click',()=>{if(mode==='live')setDoveDispersal(false);});
   doveWindButton.addEventListener('click',()=>{if(mode==='live')setDoveDispersal(true);});
@@ -370,16 +366,32 @@
         const w=birdSize,h=birdSize*.625;
         const bank=clamp(field.dirY*25,-24,24);
         const yaw=clamp(field.dirY*17+Math.sin(now*.004)*5,-22,22);
-        messenger.style.transform=`translate3d(${(field.x-w/2).toFixed(1)}px,${(field.y-h/2).toFixed(1)}px,0) perspective(240px) rotateZ(${tilt.toFixed(1)}deg) scaleX(${flip?-1:1}) rotateX(${bank.toFixed(1)}deg) rotateY(${yaw.toFixed(1)}deg)`;
+        // Wing-driven flight path: even a stationary hold glides and bobs instead of pinning a sticker to the cursor.
+        const phase=now*(.0095+wind*.00022);
+        const flutter=clamp(3.2+birdSize*.038,3.5,10.5);
+        const glideX=Math.cos(phase*.48)*flutter*.65+field.dirX*Math.min(11,wind*.48);
+        const glideY=Math.sin(phase-.8)*flutter;
+        const roll=Math.sin(phase*.5)*4.6;
+        messenger.style.transform=`translate3d(${(field.x-w/2+glideX).toFixed(1)}px,${(field.y-h/2+glideY).toFixed(1)}px,0) perspective(260px) rotateZ(${(tilt+roll).toFixed(1)}deg) scaleX(${flip?-1:1}) rotateX(${bank.toFixed(1)}deg) rotateY(${yaw.toFixed(1)}deg)`;
       }
     }
-    document.documentElement.style.setProperty('--wing-angle',`${Math.sin(now*.012)*12}deg`);
+    // Articulated wingbeat + subtle opposing wing, tail, neck and envelope lag.
+    // These values are captured in each timeline frame for deterministic scrubbing.
+    const beat=now*(.0095+wind*.00022);
+    const wingLift=Math.sin(beat);
+    const docRoot=document.documentElement;
+    docRoot.style.setProperty('--wing-angle',`${(-8+wingLift*38).toFixed(2)}deg`);
+    docRoot.style.setProperty('--far-wing-angle',`${(7-Math.sin(beat+.68)*29).toFixed(2)}deg`);
+    docRoot.style.setProperty('--tail-angle',`${(Math.sin(beat*.64+1)*9).toFixed(2)}deg`);
+    docRoot.style.setProperty('--head-angle',`${(Math.sin(beat*.54-1)*3.6).toFixed(2)}deg`);
+    docRoot.style.setProperty('--envelope-angle',`${(Math.sin(beat-.95)*11).toFixed(2)}deg`);
+    docRoot.style.setProperty('--bird-bob',`${(Math.sin(beat-.8)*2.6).toFixed(2)}px`);
     if(field.strength>.04 && !reduced.matches && now-lastEmission>Math.max(46,86-wind*1.5)){
       stream.push({x:field.x,y:field.y,dx:field.dirX,dy:field.dirY,r:field.radius,power:Math.min(1,field.strength),speed:wind,start:now});
       lastEmission=now;
       if(stream.length>40)stream.shift();
     }
-    if(!doveDisperses) return; // Keep the messenger and vapor wake, but never touch cloud letters.
+    // BOTH modes apply directional force to letters. Only the dissolve charge is mode-dependent.
     if(field.strength<=0 && !press.active){
       for(const item of letters)item.pressDose=Math.max(0,item.pressDose-seconds*.45);
       return;
@@ -399,7 +411,7 @@
         item.gustVX+=ax*seconds;
         item.gustVY+=ay*seconds;
       }
-      if(press.active && press.triggered && influence>0) {
+      if(doveDisperses && press.active && press.triggered && influence>0) {
         item.pressDose+=influence*seconds*1.45;
         const threshold=.60+random(item.index*4.17)*.72;
         if(item.pressDose>=threshold){
@@ -514,7 +526,8 @@
     if(!force&&t-lastSample<SAMPLE)return;
     lastSample=t;
     frames.push({t,now:simNow,zoom:cameraZoom,transforms:letters.slice(0,activeCount).map(i=>i.el.style.transform),gone:Uint8Array.from(letters.slice(0,activeCount),i=>+i.gone),effects:Array.from(effects),stream:stream.slice(),
-      birdTransform:messenger.style.transform,birdOpacity:messenger.style.opacity,wing:document.documentElement.style.getPropertyValue('--wing-angle'),
+      birdTransform:messenger.style.transform,birdOpacity:messenger.style.opacity,
+      pose:['--wing-angle','--far-wing-angle','--tail-angle','--head-angle','--envelope-angle','--bird-bob'].map(name=>document.documentElement.style.getPropertyValue(name)),
       controls:[windRange.value,speedRange.value,chaosRange.value,radiusRange.value,densityRange.value,birdSizeRange.value,doveDisperses?1:0]});
     syncTransport();
   }
@@ -529,7 +542,8 @@
     doveWindButton.setAttribute('aria-pressed',String(doveDisperses));
     for(let i=0;i<activeCount;i++){const el=letters[i].el;el.style.transform=frame.transforms[i]||'';el.classList.toggle('gone',!!frame.gone[i]);el.tabIndex=interactive&&!frame.gone[i]?0:-1;}
     messenger.style.transform=frame.birdTransform;messenger.style.opacity=frame.birdOpacity;
-    document.documentElement.style.setProperty('--wing-angle',frame.wing);
+    const poseKeys=['--wing-angle','--far-wing-angle','--tail-angle','--head-angle','--envelope-angle','--bird-bob'];
+    if(frame.pose)poseKeys.forEach((name,i)=>document.documentElement.style.setProperty(name,frame.pose[i]));
     [windRange,speedRange,chaosRange,radiusRange,densityRange,birdSizeRange].forEach((el,i)=>el.value=frame.controls[i]);
     windValue.textContent=windRange.value;speedValue.textContent=Number(speedRange.value).toFixed(1)+'×';chaosValue.textContent=chaosRange.value+'%';radiusValue.textContent=radiusRange.value;
     particlesFrame(frame.now,frame);

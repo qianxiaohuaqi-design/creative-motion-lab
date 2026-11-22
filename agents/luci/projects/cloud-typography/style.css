@@ -241,3 +241,20 @@ button, input { font: inherit; }
 .bottom-bar .dove-mode-switch button:disabled {opacity:.6;}
 @media(max-width:850px){.dove-mode{flex:1 1 180px;max-width:230px;}}
 @media(max-width:520px){.dove-mode{flex:1 1 44%;min-width:165px;max-width:none;}.dove-mode-label{font-size:10px;}}
+
+/* v2.1 - articulated cloud courier. Values are authored per-frame and recorded for replay. */
+:root {
+  --wing-angle:0deg;--far-wing-angle:0deg;--tail-angle:0deg;
+  --head-angle:0deg;--envelope-angle:0deg;--bird-bob:0px;
+}
+.messenger svg {transform:translate3d(0,var(--bird-bob),0);transform-origin:50% 55%;overflow:visible;}
+.dove-wing {transform-origin:91px 58px;transform-box:view-box;transform:rotate(var(--wing-angle)) rotateY(calc(var(--wing-angle) * 1.35));}
+.dove-far-wing {transform-origin:98px 53px;transform-box:view-box;transform:rotate(var(--far-wing-angle)) rotateX(calc(var(--far-wing-angle) * -.95));}
+.dove-tail {transform-origin:59px 65px;transform-box:view-box;transform:rotate(var(--tail-angle));}
+.dove-head {transform-origin:117px 51px;transform-box:view-box;transform:rotate(var(--head-angle));}
+.dove-envelope {transform-origin:146px 47px;transform-box:view-box;transform:rotate(var(--envelope-angle));}
+.mode-note {font-weight:450;opacity:.64;margin-left:3px;font-size:9px;}
+@media(prefers-reduced-motion:reduce){
+  .dove-wing,.dove-far-wing,.dove-tail,.dove-head,.dove-envelope {transform:none!important;}
+  .messenger svg {transform:none!important;}
+}
