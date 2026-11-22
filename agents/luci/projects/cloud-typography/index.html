@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#85c5e5">
   <meta name="description" content="Cloud Typography — a letter from the sky, drifting into cloud and wind.">
   <title>Cloud Typography · 云中来信</title>
-  <link rel="stylesheet" href="./style.css?v=1.8">
-  <script src="./script.js?v=1.8" defer></script>
+  <link rel="stylesheet" href="./style.css?v=1.9">
+  <script src="./script.js?v=1.9" defer></script>
 </head>
 <body>
   <main class="sky" id="sky">
@@ -100,6 +100,8 @@
         <div class="parameter"><label for="speed-range" title="文字从整齐过渡到混乱的速度">混乱速度 <output id="speed-value">1.0×</output></label><input id="speed-range" type="range" min="0" max="12" step=".5" value="1"></div>
         <div class="parameter"><label for="chaos-range" title="字母最大位移、旋转和纵深变化">混乱程度 <output id="chaos-value">70%</output></label><input id="chaos-range" type="range" min="0" max="400" step="10" value="70"></div>
         <div class="parameter reach-parameter"><label for="radius-range" title="白鸽气流的影响范围">气流范围 <output id="radius-value">200</output></label><input id="radius-range" type="range" min="60" max="360" step="10" value="200"></div>
+        <div class="parameter"><label for="density-range" title="独立字母数量；更多文字会向画面四周铺展">文字数量 <output id="density-value">100%</output></label><input id="density-range" type="range" min="50" max="300" step="25" value="100"></div>
+        <div class="parameter"><label for="bird-size-range" title="白鸽的屏幕尺寸，独立于滚轮镜头缩放">白鸽大小 <output id="bird-size-value">70px</output></label><input id="bird-size-range" type="range" min="30" max="180" step="5" value="70"></div>
         <button id="gust-button" type="button">吹散整段 ↗</button>
       </div>
       <div class="transport">

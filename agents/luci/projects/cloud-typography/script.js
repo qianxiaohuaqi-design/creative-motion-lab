@@ -1,4 +1,4 @@
-/** Cloud Typography v1.8 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v1.9 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -18,6 +18,10 @@
   const replayButton = document.getElementById('replay-button');
   const liveButton = document.getElementById('live-button');
   const zoomValue = document.getElementById('zoom-value');
+  const densityRange = document.getElementById('density-range');
+  const densityValue = document.getElementById('density-value');
+  const birdSizeRange = document.getElementById('bird-size-range');
+  const birdSizeValue = document.getElementById('bird-size-value');
   const windValue = document.getElementById('wind-value');
   const chaosValue = document.getElementById('chaos-value');
   const radiusValue = document.getElementById('radius-value');
@@ -25,12 +29,19 @@
   const resetButton = document.getElementById('reset-button');
   const status = document.getElementById('live-status');
   const messenger = document.getElementById('messenger');
-  if (!sky || !paragraph || !canvas || !windRange || !chaosRange || !radiusRange || !radiusValue || !speedRange || !speedValue || !timeline || !playButton || !replayButton || !liveButton || !resetButton) return;
+  if (!sky || !paragraph || !canvas || !windRange || !chaosRange || !radiusRange || !radiusValue || !speedRange || !speedValue || !timeline || !playButton || !replayButton || !liveButton || !resetButton || !densityRange || !densityValue || !birdSizeRange || !birdSizeValue) return;
   const ctx = canvas.getContext('2d', {alpha:true});
   if (!ctx) return;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   const original = paragraph.textContent.replace(/\s+/g, ' ').trim();
   const letters = [];
+  const words = [];
+  const baseWords=original.split(' ');
+  const additionalWords=("Somewhere above the quiet roofs, a small white wing carries the promise of a distant morning. The envelope holds no address, only the warmth of a thought left unsaid. Across the wide blue, the wind unfolds the pages, and every word becomes a tiny cloud on its way home. If you listen to the silence between the lines, you may hear the sky whisper your name. Nothing here is lost; even the words that drift beyond the horizon may reach another light, another open window, another heart waiting for a letter.").split(' ');
+  const wordPool=baseWords.concat(additionalWords,baseWords).slice(0,baseWords.length*3);
+  let density=+densityRange.value, activeCount=0, visibleWords=-1;
+  let birdSize=+birdSizeRange.value;
+  let cachedFitWidth=0,cachedFitHeight=0;
   const effects = new Map();
   const stream = [];
   let lastEmission = 0;
@@ -61,9 +72,10 @@
 
   function build() {
     paragraph.textContent = '';
-    original.split(' ').forEach((wordText, wi, all) => {
+    wordPool.forEach((wordText, wi, all) => {
       const word = document.createElement('span');
       word.className = 'word';
+      const first=letters.length;
       for (const char of wordText) {
         const el = document.createElement('span');
         el.className = 'letter';
@@ -74,19 +86,69 @@
         el.tabIndex = 0;
         el.setAttribute('aria-label', `吹散字母 ${char}`);
         const index = letters.length;
-        letters.push({el,word,index,gone:false,x:0,y:0,
+        letters.push({el,word,index,active:true,gone:false,x:0,y:0,
           biasX:(random(index*1.713)-.5)*2,biasY:(random(index*2.317)-.5)*2,
           zSeed:(random(index*3.199)-.5)*2,
           gustX:0,gustY:0,gustZ:0,gustVX:0,gustVY:0,pressDose:0});
         word.append(el);
       }
       paragraph.append(word);
-      if (wi < all.length-1) paragraph.append(document.createTextNode(' '));
+      const space=document.createElement('span');
+      space.textContent=' ';
+      space.className='word-gap';
+      paragraph.append(space);
+      words.push({word,space,first,end:letters.length});
     });
+  }
+  // Keep a stable indexed letter pool so density changes don't destroy dissolution history.
+  // Use full words to avoid truncating glyph clusters or leaving broken word endings.
+  function fitDensity(){
+    const root=document.documentElement;
+    const spread=clamp((density-100)/200,0,1);
+    root.style.setProperty('--letter-area-width',(90+spread*7)+'vw');
+    root.style.setProperty('--letter-area-max',(1080+spread*680)+'px');
+    root.style.setProperty('--letter-text-max',(980+spread*710)+'px');
+    const composition=paragraph.closest('.composition');
+    const header=document.querySelector('.masthead'),footer=document.querySelector('.bottom-bar');
+    let font=vw<=520?clamp(vw*.043,17,21):vw<=850?clamp(vw*.037,23,35):clamp(vw*.03,27,44);
+    paragraph.style.fontSize=font+'px';
+    if(composition&&header&&footer){
+      const room=Math.max(130,vh-header.offsetHeight-footer.offsetHeight-22);
+      for(let i=0;i<6&&composition.offsetHeight>room&&font>10;i++){
+        font=Math.max(10,font*.88);
+        paragraph.style.fontSize=font.toFixed(2)+'px';
+      }
+    }
+    cachedFitWidth=vw;cachedFitHeight=vh;
+    measure();
+  }
+  function applyDensity(value,force=false){
+    density=clamp(Number(value),50,300);
+    const count=Math.min(words.length,Math.max(1,Math.round(baseWords.length*density/100)));
+    if(force||count!==visibleWords){
+      visibleWords=count;
+      activeCount=words[count-1].end;
+      for(let i=0;i<words.length;i++){
+        const w=words[i],shown=i<count;
+        w.word.hidden=!shown;w.space.hidden=!shown||i===count-1;
+        for(let j=w.first;j<w.end;j++){
+          const item=letters[j];item.active=shown;
+          item.el.tabIndex=shown&&!item.gone&&mode==='live'?0:-1;
+        }
+      }
+      fitDensity();
+    }else if(cachedFitWidth!==vw||cachedFitHeight!==vh)fitDensity();
+    densityValue.textContent=activeCount+' 字母';
+  }
+  function applyBirdSize(value){
+    birdSize=clamp(Number(value),30,180);
+    document.documentElement.style.setProperty('--bird-size',birdSize+'px');
+    birdSizeValue.textContent=birdSize+'px';
   }
   // Layout positions in the same coordinate system, regardless of each letter's animation transform.
   function measure() {
     for (const item of letters) {
+      if(!item.active)continue;
       item.x = item.word.offsetLeft + item.el.offsetLeft + item.el.offsetWidth / 2;
       item.y = item.word.offsetTop + item.el.offsetTop + item.el.offsetHeight / 2;
     }
@@ -97,7 +159,7 @@
     canvas.width = Math.max(1,Math.round(vw * dpr));
     canvas.height = Math.max(1,Math.round(vh * dpr));
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    measure();
+    if(words.length)fitDensity();else measure();
   }
   function createMistSprite(elongated) {
     const c = document.createElement('canvas'); c.width = c.height = 128;
@@ -143,7 +205,7 @@
     return {selected,rect};
   }
   function dissolve(item, options={}) {
-    if (mode!=='live' || !item || item.gone || effects.has(item.index)) return;
+    if (mode!=='live' || !item || !item.active || item.gone || effects.has(item.index)) return;
     if (reduced.matches) { item.gone=true; item.el.classList.add('gone'); item.el.tabIndex=-1; return; }
     const now = simNow;
     const {selected,rect} = glyphPoints(item, options.mass ? 14 : 55);
@@ -171,7 +233,7 @@
   function gust() {
     if (mode!=='live' || gusting) return;
     gusting=true;
-    const available=letters.filter(x=>!x.gone&&!effects.has(x.index));
+    const available=letters.filter(x=>x.active&&!x.gone&&!effects.has(x.index));
     available.forEach((item,i)=>dissolve(item,{mass:true,delay:i*14+random(item.index*2.1)*280}));
     if(status) status.textContent='一阵风掠过，字母正向天空的远处散开。';
     window.setTimeout(()=>{gusting=false;},800);
@@ -201,7 +263,7 @@
   function nearestLetter(clientX,clientY) {
     let best = null, score = Infinity;
     for(const item of letters){
-      if(item.gone || effects.has(item.index)) continue;
+      if(!item.active || item.gone || effects.has(item.index)) continue;
       const r=item.el.getBoundingClientRect();
       const pad=4;
       if(clientX<r.left-pad || clientX>r.right+pad || clientY<r.top-pad || clientY>r.bottom+pad)continue;
@@ -286,7 +348,7 @@
         const angle=Math.atan2(field.dirY,field.dirX)*180/Math.PI;
         const flip=field.dirX<0;
         const tilt=flip?angle-(angle>0?180:-180):angle;
-        const w=vw<=520?54:70,h=vw<=520?34:44;
+        const w=birdSize,h=birdSize*.625;
         const bank=clamp(field.dirY*25,-24,24);
         const yaw=clamp(field.dirY*17+Math.sin(now*.004)*5,-22,22);
         messenger.style.transform=`translate3d(${(field.x-w/2).toFixed(1)}px,${(field.y-h/2).toFixed(1)}px,0) perspective(240px) rotateZ(${tilt.toFixed(1)}deg) scaleX(${flip?-1:1}) rotateX(${bank.toFixed(1)}deg) rotateY(${yaw.toFixed(1)}deg)`;
@@ -303,7 +365,7 @@
       return;
     }
     for(const item of letters) {
-      if(item.gone||effects.has(item.index)) continue;
+      if(!item.active||item.gone||effects.has(item.index)) continue;
       const bounds=item.el.getBoundingClientRect();
       const dx=(bounds.left+bounds.width/2)-field.x;
       const dy=(bounds.top+bounds.height/2)-field.y;
@@ -425,24 +487,26 @@
     liveButton.disabled=mode==='live'||duration>=MAX_TAKE;
     replayButton.disabled=frames.length<2;
     playButton.disabled=mode==='paused'&&frames.length<2;
-    for(const el of [windRange,speedRange,chaosRange,radiusRange,gustButton,document.getElementById('zoom-in'),document.getElementById('zoom-out')])el.disabled=mode!=='live';
+    for(const el of [windRange,speedRange,chaosRange,radiusRange,densityRange,birdSizeRange,gustButton,document.getElementById('zoom-in'),document.getElementById('zoom-out')])el.disabled=mode!=='live';
   }
   function capture(force=false){
     const t=Math.max(0,simNow-start);
     if(!force&&t-lastSample<SAMPLE)return;
     lastSample=t;
-    frames.push({t,now:simNow,zoom:cameraZoom,transforms:letters.map(i=>i.el.style.transform),gone:Uint8Array.from(letters,i=>+i.gone),effects:Array.from(effects),stream:stream.slice(),
+    frames.push({t,now:simNow,zoom:cameraZoom,transforms:letters.slice(0,activeCount).map(i=>i.el.style.transform),gone:Uint8Array.from(letters.slice(0,activeCount),i=>+i.gone),effects:Array.from(effects),stream:stream.slice(),
       birdTransform:messenger.style.transform,birdOpacity:messenger.style.opacity,wing:document.documentElement.style.getPropertyValue('--wing-angle'),
-      controls:[windRange.value,speedRange.value,chaosRange.value,radiusRange.value]});
+      controls:[windRange.value,speedRange.value,chaosRange.value,radiusRange.value,densityRange.value,birdSizeRange.value]});
     syncTransport();
   }
   function showFrame(frame,interactive=false){
     if(!frame)return;
     applyZoom(frame.zoom);
-    for(let i=0;i<letters.length;i++){const el=letters[i].el;el.style.transform=frame.transforms[i];el.classList.toggle('gone',!!frame.gone[i]);el.tabIndex=interactive&&!frame.gone[i]?0:-1;}
+    applyDensity(frame.controls[4]);
+    applyBirdSize(frame.controls[5]);
+    for(let i=0;i<activeCount;i++){const el=letters[i].el;el.style.transform=frame.transforms[i]||'';el.classList.toggle('gone',!!frame.gone[i]);el.tabIndex=interactive&&!frame.gone[i]?0:-1;}
     messenger.style.transform=frame.birdTransform;messenger.style.opacity=frame.birdOpacity;
     document.documentElement.style.setProperty('--wing-angle',frame.wing);
-    [windRange,speedRange,chaosRange,radiusRange].forEach((el,i)=>el.value=frame.controls[i]);
+    [windRange,speedRange,chaosRange,radiusRange,densityRange,birdSizeRange].forEach((el,i)=>el.value=frame.controls[i]);
     windValue.textContent=windRange.value;speedValue.textContent=Number(speedRange.value).toFixed(1)+'×';chaosValue.textContent=chaosRange.value+'%';radiusValue.textContent=radiusRange.value;
     particlesFrame(frame.now,frame);
   }
@@ -466,6 +530,7 @@
   function returnLive(){
     if(mode==='live'||!frames.length||frames[frames.length-1].t>=MAX_TAKE)return;
     const tail=frames[frames.length-1];showFrame(tail,true);readControls();
+    for(const item of letters){item.el.classList.toggle('gone',item.gone);item.el.tabIndex=item.active&&!item.gone?0:-1;}
     playhead=tail.t;mode='live';document.documentElement.classList.remove('take-paused');previousTick=performance.now();syncTransport();
   }
   timeline.addEventListener('input',()=>{const wanted=Number(timeline.value);if(mode==='live')freeze();mode='paused';playhead=clamp(wanted,0,frames[frames.length-1]?.t||0);showFrame(frameAt(playhead));syncTransport();});
@@ -499,10 +564,10 @@
       const breeze=stageScale;
       const motionTime=chaosClock;
       if(reduced.matches){
-        for(const item of letters) if(!item.gone) item.el.style.transform='';
+        for(const item of letters) if(item.active&&!item.gone) item.el.style.transform='';
       } else {
         for (const item of letters) {
-          if(item.gone||effects.has(item.index)) continue;
+          if(!item.active||item.gone||effects.has(item.index)) continue;
           motionImpulse(item,dt);
           const x=item.x*.012,y=item.y*.011,k=item.index;
           const sharedX = Math.sin(elapsed*.00026+x*.45+y*.18)*9 + Math.sin(elapsed*.00013+x*.33)*8;
@@ -528,18 +593,20 @@
   chaosRange.addEventListener('input',()=>{disorder=+chaosRange.value/100;chaosValue.textContent=chaosRange.value+'%';});
   speedRange.addEventListener('input',()=>{chaosSpeed=+speedRange.value;speedValue.textContent=chaosSpeed.toFixed(1)+'×';});
   radiusRange.addEventListener('input',()=>{radiusSetting=+radiusRange.value;field.radius=radiusSetting;radiusValue.textContent=String(radiusSetting);});
+  densityRange.addEventListener('input',()=>{if(mode==='live')applyDensity(densityRange.value);});
+  birdSizeRange.addEventListener('input',()=>{if(mode==='live')applyBirdSize(birdSizeRange.value);});
   resetButton.addEventListener('click',()=>{
     effects.clear();gusting=false;mode='live';document.documentElement.classList.remove('take-paused');readControls();start=simNow;chaosClock=0;frames.length=0;lastSample=-Infinity;playhead=0;previousTick=performance.now();
     press.active=false;press.id=null;field.strength=0;field.x=-1000;field.y=-1000;
     stream.length=0; lastEmission=0;
     if(messenger)messenger.style.opacity='0';
-    for(const item of letters){item.gone=false;item.el.classList.remove('gone');item.el.tabIndex=0;item.el.style.transform='';item.gustX=item.gustY=item.gustZ=item.gustVX=item.gustVY=item.pressDose=0;}
+    for(const item of letters){item.gone=false;item.el.classList.remove('gone');item.el.tabIndex=item.active?0:-1;item.el.style.transform='';item.gustX=item.gustY=item.gustZ=item.gustVX=item.gustVY=item.pressDose=0;}
     ctx.clearRect(0,0,vw,vh);applyZoom(cameraZoom);capture(true);if(status)status.textContent='新一轮开始，所有字母已恢复。';
   });
   window.addEventListener('resize',resize,{passive:true});
   reduced.addEventListener?.('change',()=>{field.strength=0;});
   document.addEventListener('visibilitychange',()=>{previousTick=performance.now();if(document.hidden){press.active=false;press.id=null;field.strength=0;stream.length=0;ctx.clearRect(0,0,vw,vh);if(messenger)messenger.style.opacity='0';}});
-  build(); resize();start=simNow;
+  build(); applyDensity(densityRange.value,true);applyBirdSize(birdSizeRange.value);resize();start=simNow;
   windValue.textContent=String(wind);
   chaosValue.textContent=chaosRange.value+'%';speedValue.textContent=chaosSpeed.toFixed(1)+'×';
   radiusValue.textContent=String(radiusSetting);
