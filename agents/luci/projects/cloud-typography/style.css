@@ -230,3 +230,14 @@ button, input { font: inherit; }
 #density-value,#bird-size-value {white-space:nowrap;font-variant-numeric:tabular-nums;font-size:10px;}
 @media(max-width:850px){.controls{justify-content:flex-start;}.parameter{flex:1 1 105px;max-width:none;}}
 @media(max-width:520px){.parameter{flex:1 1 28%;min-width:83px;}.controls{gap:7px 10px;}.parameter label{font-size:10px;}.composition{padding:8px 0 12px;}}
+
+/* v2.0 · two-state dove interaction. Visual flight is independent of glyph physics. */
+.dove-mode {display:grid;gap:4px;flex:0 1 212px;align-content:end;min-width:186px;}
+.dove-mode-label {color:rgba(255,255,255,.88);font-size:11px;font-weight:650;letter-spacing:.04em;}
+.dove-mode-switch {display:grid;grid-template-columns:1fr 1fr;gap:3px;border:1px solid rgba(255,255,255,.36);background:rgba(89,151,187,.18);border-radius:999px;padding:3px;}
+.bottom-bar .dove-mode-switch button {min-width:0;border:0;border-radius:999px;padding:6px 8px;font-size:10px;color:rgba(255,255,255,.76);background:transparent;box-shadow:none;}
+.bottom-bar .dove-mode-switch button[aria-pressed="true"] {background:rgba(255,255,255,.92);color:#397d9c;box-shadow:0 1px 7px rgba(71,134,169,.2);font-weight:650;}
+.bottom-bar .dove-mode-switch button:focus-visible {outline:2px solid white;outline-offset:3px;}
+.bottom-bar .dove-mode-switch button:disabled {opacity:.6;}
+@media(max-width:850px){.dove-mode{flex:1 1 180px;max-width:230px;}}
+@media(max-width:520px){.dove-mode{flex:1 1 44%;min-width:165px;max-width:none;}.dove-mode-label{font-size:10px;}}

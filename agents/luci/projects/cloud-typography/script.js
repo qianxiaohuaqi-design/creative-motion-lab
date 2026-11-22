@@ -1,4 +1,4 @@
-/** Cloud Typography v1.9 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v2.0 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -22,6 +22,8 @@
   const densityValue = document.getElementById('density-value');
   const birdSizeRange = document.getElementById('bird-size-range');
   const birdSizeValue = document.getElementById('bird-size-value');
+  const doveCalmButton = document.getElementById('dove-calm');
+  const doveWindButton = document.getElementById('dove-wind');
   const windValue = document.getElementById('wind-value');
   const chaosValue = document.getElementById('chaos-value');
   const radiusValue = document.getElementById('radius-value');
@@ -29,7 +31,7 @@
   const resetButton = document.getElementById('reset-button');
   const status = document.getElementById('live-status');
   const messenger = document.getElementById('messenger');
-  if (!sky || !paragraph || !canvas || !windRange || !chaosRange || !radiusRange || !radiusValue || !speedRange || !speedValue || !timeline || !playButton || !replayButton || !liveButton || !resetButton || !densityRange || !densityValue || !birdSizeRange || !birdSizeValue) return;
+  if (!sky || !paragraph || !canvas || !windRange || !chaosRange || !radiusRange || !radiusValue || !speedRange || !speedValue || !timeline || !playButton || !replayButton || !liveButton || !resetButton || !densityRange || !densityValue || !birdSizeRange || !birdSizeValue || !doveCalmButton || !doveWindButton) return;
   const ctx = canvas.getContext('2d', {alpha:true});
   if (!ctx) return;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -41,6 +43,7 @@
   const wordPool=baseWords.concat(additionalWords,baseWords).slice(0,baseWords.length*3);
   let density=+densityRange.value, activeCount=0, visibleWords=-1;
   let birdSize=+birdSizeRange.value;
+  let doveDisperses=true;
   let cachedFitWidth=0,cachedFitHeight=0;
   const effects = new Map();
   const stream = [];
@@ -145,6 +148,22 @@
     document.documentElement.style.setProperty('--bird-size',birdSize+'px');
     birdSizeValue.textContent=birdSize+'px';
   }
+  function setDoveDispersal(enabled){
+    doveDisperses=Boolean(enabled);
+    doveCalmButton.setAttribute('aria-pressed',String(!doveDisperses));
+    doveWindButton.setAttribute('aria-pressed',String(doveDisperses));
+    if(!doveDisperses){
+      // Stop old directional impulses immediately; keep existing disappeared letters gone.
+      for(const item of letters){
+        item.pressDose=0;
+        item.gustVX=item.gustVY=item.gustZ=0;
+        item.gustX=item.gustY=0;
+      }
+    }
+    if(status)status.textContent=doveDisperses?'白鸽将吹动并吹散经过的云字。':'白鸽只送信，气流不会推动或吹散字母。';
+  }
+  doveCalmButton.addEventListener('click',()=>{if(mode==='live')setDoveDispersal(false);});
+  doveWindButton.addEventListener('click',()=>{if(mode==='live')setDoveDispersal(true);});
   // Layout positions in the same coordinate system, regardless of each letter's animation transform.
   function measure() {
     for (const item of letters) {
@@ -360,6 +379,7 @@
       lastEmission=now;
       if(stream.length>40)stream.shift();
     }
+    if(!doveDisperses) return; // Keep the messenger and vapor wake, but never touch cloud letters.
     if(field.strength<=0 && !press.active){
       for(const item of letters)item.pressDose=Math.max(0,item.pressDose-seconds*.45);
       return;
@@ -487,7 +507,7 @@
     liveButton.disabled=mode==='live'||duration>=MAX_TAKE;
     replayButton.disabled=frames.length<2;
     playButton.disabled=mode==='paused'&&frames.length<2;
-    for(const el of [windRange,speedRange,chaosRange,radiusRange,densityRange,birdSizeRange,gustButton,document.getElementById('zoom-in'),document.getElementById('zoom-out')])el.disabled=mode!=='live';
+    for(const el of [windRange,speedRange,chaosRange,radiusRange,densityRange,birdSizeRange,doveCalmButton,doveWindButton,gustButton,document.getElementById('zoom-in'),document.getElementById('zoom-out')])el.disabled=mode!=='live';
   }
   function capture(force=false){
     const t=Math.max(0,simNow-start);
@@ -495,7 +515,7 @@
     lastSample=t;
     frames.push({t,now:simNow,zoom:cameraZoom,transforms:letters.slice(0,activeCount).map(i=>i.el.style.transform),gone:Uint8Array.from(letters.slice(0,activeCount),i=>+i.gone),effects:Array.from(effects),stream:stream.slice(),
       birdTransform:messenger.style.transform,birdOpacity:messenger.style.opacity,wing:document.documentElement.style.getPropertyValue('--wing-angle'),
-      controls:[windRange.value,speedRange.value,chaosRange.value,radiusRange.value,densityRange.value,birdSizeRange.value]});
+      controls:[windRange.value,speedRange.value,chaosRange.value,radiusRange.value,densityRange.value,birdSizeRange.value,doveDisperses?1:0]});
     syncTransport();
   }
   function showFrame(frame,interactive=false){
@@ -503,6 +523,10 @@
     applyZoom(frame.zoom);
     applyDensity(frame.controls[4]);
     applyBirdSize(frame.controls[5]);
+    // Playback restores the recorded mode without modifying the historical glyph transforms.
+    doveDisperses=Boolean(Number(frame.controls[6]));
+    doveCalmButton.setAttribute('aria-pressed',String(!doveDisperses));
+    doveWindButton.setAttribute('aria-pressed',String(doveDisperses));
     for(let i=0;i<activeCount;i++){const el=letters[i].el;el.style.transform=frame.transforms[i]||'';el.classList.toggle('gone',!!frame.gone[i]);el.tabIndex=interactive&&!frame.gone[i]?0:-1;}
     messenger.style.transform=frame.birdTransform;messenger.style.opacity=frame.birdOpacity;
     document.documentElement.style.setProperty('--wing-angle',frame.wing);
@@ -610,6 +634,6 @@
   windValue.textContent=String(wind);
   chaosValue.textContent=chaosRange.value+'%';speedValue.textContent=chaosSpeed.toFixed(1)+'×';
   radiusValue.textContent=String(radiusSetting);
-  applyZoom(1);capture(true);
+  setDoveDispersal(true);applyZoom(1);capture(true);
   requestAnimationFrame(animate);
 })();
