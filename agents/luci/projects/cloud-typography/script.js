@@ -1,4 +1,4 @@
-/** Cloud Typography v1.4 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v1.5 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -15,7 +15,7 @@
   const gustButton = document.getElementById('gust-button');
   const resetButton = document.getElementById('reset-button');
   const status = document.getElementById('live-status');
-  const halo = document.getElementById('wind-halo');
+  const messenger = document.getElementById('messenger');
   if (!sky || !paragraph || !canvas || !windRange || !chaosRange || !radiusRange || !radiusValue || !resetButton) return;
   const ctx = canvas.getContext('2d', {alpha:true});
   if (!ctx) return;
@@ -23,6 +23,8 @@
   const original = paragraph.textContent.replace(/\s+/g, ' ').trim();
   const letters = [];
   const effects = new Map();
+  const stream = [];
+  let lastEmission = 0;
   const masks = new Map();
   const clamp = (v,a,b) => Math.min(b,Math.max(a,v));
   const smooth = t => { t = clamp(t,0,1); return t*t*(3-2*t); };
@@ -251,7 +253,7 @@
         field.dirX=press.dirX/unit;field.dirY=press.dirY/unit;
         field.x=press.x;field.y=press.y;
         field.strength=.35+2.2*smooth((held-180)/1700);
-        // Actual affected area and halo diameter always share the slider's radius.
+        // The slider controls both the wake width and the local wind reach.
         field.radius=radiusSetting;
       }
     } else {
@@ -261,23 +263,31 @@
       field.y+=field.dirY*dt*.022*field.strength;
       if(field.strength<.012)field.strength=0;
     }
-    if(halo){
+    if(messenger){
       const visible=!reduced.matches && field.strength>.012;
-      halo.style.opacity=visible?String(Math.min(.63,field.strength*.26)):'0';
+      messenger.style.opacity=visible?String(Math.min(1,field.strength*1.3)):'0';
       if(visible){
-        const scale=field.radius/95;
-        halo.style.transform=`translate3d(${field.x.toFixed(1)}px,${field.y.toFixed(1)}px,0) scale(${scale.toFixed(2)}) rotate(${(Math.atan2(field.dirY,field.dirX)*180/Math.PI).toFixed(0)}deg)`;
+        const angle=Math.atan2(field.dirY,field.dirX)*180/Math.PI;
+        const flip=field.dirX<0;
+        const tilt=flip?angle-(angle>0?180:-180):angle;
+        const w=vw<=520?100:135,h=vw<=520?67:90;
+        messenger.style.transform=`translate3d(${(field.x-w/2).toFixed(1)}px,${(field.y-h/2).toFixed(1)}px,0) rotate(${tilt.toFixed(1)}deg) scaleX(${flip?-1:1})`;
       }
+    }
+    if(field.strength>.04 && !reduced.matches && now-lastEmission>55){
+      stream.push({x:field.x,y:field.y,dx:field.dirX,dy:field.dirY,r:field.radius,power:Math.min(1,field.strength),start:now});
+      lastEmission=now;
+      if(stream.length>36)stream.shift();
     }
     if(field.strength<=0 && !press.active){
       for(const item of letters)item.pressDose=Math.max(0,item.pressDose-seconds*.45);
       return;
     }
-    const bounds=paragraph.getBoundingClientRect();
     for(const item of letters) {
       if(item.gone||effects.has(item.index)) continue;
-      const dx=(bounds.left+item.x+item.gustX)-field.x;
-      const dy=(bounds.top+item.y+item.gustY)-field.y;
+      const bounds=item.el.getBoundingClientRect();
+      const dx=(bounds.left+bounds.width/2)-field.x;
+      const dy=(bounds.top+bounds.height/2)-field.y;
       const dist=Math.hypot(dx,dy);
       const influence=dist<field.radius?Math.pow(1-dist/field.radius,1.32)*field.strength:0;
       if(influence>0 && !reduced.matches) {
@@ -318,8 +328,38 @@
     if(e.target.closest?.('.composition'))return;
     gust();
   });
+  // A fading directional wake, rather than a circular UI indicator.
+  function drawStream(now) {
+    for(let i=stream.length-1;i>=0;i--){
+      const s=stream[i],t=(now-s.start)/1000;
+      if(t>=1){stream.splice(i,1);continue;}
+      const fade=(1-t)*(1-t)*s.power;
+      const nx=-s.dy,ny=s.dx;
+      const tail=s.r*(.8+t*.8);
+      const x=s.x-s.dx*(18+t*65),y=s.y-s.dy*(18+t*65);
+      ctx.save();
+      ctx.lineCap='round';
+      for(let k=-2;k<=2;k++){
+        const spread=k*s.r*.105;
+        const wave=Math.sin(s.start*.004+k*1.7)*s.r*.08;
+        const endX=x-s.dx*tail+nx*(spread*1.8+wave);
+        const endY=y-s.dy*tail+ny*(spread*1.8+wave);
+        const grad=ctx.createLinearGradient(x,y,endX,endY);
+        grad.addColorStop(0,'rgba(255,255,255,0)');
+        grad.addColorStop(.24,`rgba(255,255,255,${fade*.18})`);
+        grad.addColorStop(.65,`rgba(255,255,255,${fade*.10})`);
+        grad.addColorStop(1,'rgba(255,255,255,0)');
+        ctx.strokeStyle=grad;ctx.lineWidth=(k===0?4.5:2.1)*(1+t)*Math.sqrt(s.r/200);
+        ctx.beginPath();ctx.moveTo(x+nx*spread*.4,y+ny*spread*.4);
+        ctx.bezierCurveTo(x-s.dx*tail*.26+nx*(spread+wave),y-s.dy*tail*.26+ny*(spread+wave),x-s.dx*tail*.70+nx*(spread-wave),y-s.dy*tail*.70+ny*(spread-wave),endX,endY);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
   function particlesFrame(now) {
     ctx.clearRect(0,0,vw,vh);
+    drawStream(now);
     const px=vw*.5,py=vh*.5;
     for (const [key,effect] of effects) {
       const age=now-effect.start;
@@ -374,7 +414,7 @@
           item.el.style.transform=`translate3d(${px.toFixed(1)}px,${py.toFixed(1)}px,${pz.toFixed(1)}px) rotateX(${rx.toFixed(1)}deg) rotateY(${ry.toFixed(1)}deg) rotateZ(${(rz+impulseAngle).toFixed(1)}deg)`;
         }
       }
-      if (effects.size) particlesFrame(now);
+      if (effects.size || stream.length) particlesFrame(now);
     }
     requestAnimationFrame(animate);
   }
@@ -384,13 +424,14 @@
   resetButton.addEventListener('click',()=>{
     effects.clear();gusting=false;start=performance.now();
     press.active=false;press.id=null;field.strength=0;field.x=-1000;field.y=-1000;
-    if(halo)halo.style.opacity='0';
+    stream.length=0; lastEmission=0;
+    if(messenger)messenger.style.opacity='0';
     for(const item of letters){item.gone=false;item.el.classList.remove('gone');item.el.tabIndex=0;item.el.style.transform='';item.gustX=item.gustY=item.gustZ=item.gustVX=item.gustVY=item.pressDose=0;}
     ctx.clearRect(0,0,vw,vh); if(status)status.textContent='天空重新开始，所有字母已恢复。';
   });
   window.addEventListener('resize',resize,{passive:true});
   reduced.addEventListener?.('change',()=>{start=performance.now();field.strength=0;});
-  document.addEventListener('visibilitychange',()=>{previousTick=performance.now();if(document.hidden){press.active=false;press.id=null;field.strength=0;}});
+  document.addEventListener('visibilitychange',()=>{previousTick=performance.now();if(document.hidden){press.active=false;press.id=null;field.strength=0;stream.length=0;ctx.clearRect(0,0,vw,vh);if(messenger)messenger.style.opacity='0';}});
   build(); resize();
   windValue.textContent=String(wind).padStart(2,'0');
   chaosValue.textContent=String(chaosRange.value).padStart(2,'0');

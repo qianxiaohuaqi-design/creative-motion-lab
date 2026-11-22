@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#85c5e5">
   <meta name="description" content="Cloud Typography — a letter from the sky, drifting into cloud and wind.">
-  <title>Cloud Typography · 云间来信</title>
+  <title>Cloud Typography · 云中来信</title>
   <link rel="stylesheet" href="./style.css">
   <script src="./script.js" defer></script>
 </head>
@@ -18,29 +18,47 @@
 
     <header class="masthead">
       <span class="brand"><span class="brand-mark" aria-hidden="true">✳</span> CREATIVE MOTION LAB <span class="divider">/</span> EXPERIMENT 00</span>
-      <span class="edition">A STUDY OF WORDS, WIND AND SPACE</span>
+      <span class="edition">A LETTER ARRIVES ON WINGS OF WIND</span>
     </header>
 
     <section class="composition" aria-labelledby="cloud-text">
       <div class="text-plane">
         <p class="eyebrow">A LETTER WRITTEN IN THE SKY</p>
-        <h1 id="cloud-text">Some days the sky holds every word in place. Then the wind arrives, almost too quietly to notice. A letter tilts. Another drifts. Soon the sentences loosen into pale clouds, and what once made sense begins to float away.</h1>
-        <p class="subtitle">Even the gentlest wind can change a story.</p>
+        <h1 id="cloud-text">Some days the sky holds every word in place. Then a white dove crosses the light with a letter in its keeping. As the air lifts behind its wings, one line loosens, another wanders, and the message begins to travel as cloud.</h1>
+        <p class="subtitle">Hold the sky and the letter begins to move.</p>
       </div>
     </section>
 
     <canvas id="mist-canvas" aria-hidden="true"></canvas>
-    <div id="wind-halo" class="wind-halo" aria-hidden="true"></div>
+    <div id="messenger" class="messenger" aria-hidden="true">
+      <svg viewBox="0 0 150 100" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
+        <g stroke-linejoin="round">
+          <path fill="#dcecf4" d="M69 57C53 43 42 30 39 14c15 9 35 14 51 39Z"/>
+          <path fill="#f7fcff" d="M53 62C37 58 20 58 8 63l23 9-8 9 34-7c12 9 30 8 42 1 9-5 14-13 17-24 3-7 9-12 17-11 6 0 10 4 11 9l-10 5c-4 19-19 36-46 38-20 2-35-8-35-30Z"/>
+          <g class="dove-wing">
+            <path fill="#fff" d="M82 73C54 67 38 48 21 19c15 8 20 9 28 9L43 12c12 9 20 15 28 24L69 19c12 15 20 25 23 40 1 6-3 11-10 14Z"/>
+            <path fill="none" stroke="#c5e0ee" stroke-width="1.1" opacity=".75" d="M47 32c8 10 17 19 31 27M57 36c7 11 16 19 24 24"/>
+          </g>
+          <path fill="#e8cf9f" d="M140 47l9 4-9 3z"/>
+          <circle cx="135" cy="45" r="1.4" fill="#638399"/>
+          <g transform="translate(111 57) rotate(-8)">
+            <path fill="#eff8fc" stroke="#a4c6d8" stroke-width=".7" d="M0 0h28v19H0z"/>
+            <path fill="none" stroke="#a4c6d8" stroke-width=".9" d="m0 0 14 11L28 0M0 19l10-8m18 8L18 11"/>
+            <circle cx="14" cy="10" r="2.4" fill="#cf998e"/>
+          </g>
+        </g>
+      </svg>
+    </div>
 
     <footer class="bottom-bar">
-      <div class="hint"><span class="hint-symbol" aria-hidden="true">✧</span> 轻点字母吹散 · 长按拖动控制风向与范围</div>
+      <div class="hint"><span class="hint-symbol" aria-hidden="true">✧</span> 轻点字母吹散 · 长按唤来白鸽，拖动带起气流</div>
       <div class="controls">
         <label for="wind-range" title="常风：文字平时漂浮和消散时的风力">WIND <span class="control-zh">常风</span> <output id="wind-value">03</output></label>
         <input id="wind-range" type="range" min="0" max="6" step="1" value="3" aria-label="常风强度，控制文字自然漂浮与消散的风力" title="0—6，控制全局的柔风">
         <label for="chaos-range" title="失序：控制字母随时间偏离整齐排版的程度">DISORDER <span class="control-zh">失序</span> <output id="chaos-value">70</output></label>
         <input id="chaos-range" type="range" min="0" max="100" step="5" value="70" aria-label="失序程度，控制字母漂移和旋转的混乱程度" title="0—100，控制自然失序的幅度">
-        <label for="radius-range" title="风圈：鼠标/手指长按时的局部风影响半径">RADIUS <span class="control-zh">风圈</span> <output id="radius-value">200</output></label>
-        <input id="radius-range" type="range" min="80" max="340" step="10" value="200" aria-label="长按局部风圈半径，单位像素" title="80—340 像素，光圈与实际受风半径同步">
+        <label for="radius-range" title="风程：白鸽带起的局部气流范围">REACH <span class="control-zh">风程</span> <output id="radius-value">200</output></label>
+        <input id="radius-range" type="range" min="80" max="340" step="10" value="200" aria-label="白鸽带起的气流范围，单位像素" title="80—340 像素，调整气流的宽度与受风范围">
         <button id="gust-button" type="button">吹散整段 <span aria-hidden="true">↗</span></button>
         <button id="reset-button" type="button">重新开始 <span aria-hidden="true">↺</span></button>
       </div>

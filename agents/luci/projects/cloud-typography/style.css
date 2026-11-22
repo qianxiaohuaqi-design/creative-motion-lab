@@ -129,26 +129,9 @@ button, input { font: inherit; }
 }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration: .001ms!important; transition-duration: .001ms!important; } }
 
-/* v1.3 · A cursor-centred wind halo; the letters and Canvas remain clickable. */
-.wind-halo {
-  position: fixed;
-  z-index: 4;
-  top: 0; left: 0;
-  width: 190px; height: 190px;
-  margin-left: -95px; margin-top: -95px;
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0;
-  background:
-    radial-gradient(circle at center, rgba(255,255,255,.09), rgba(253,255,255,.09) 19%, transparent 55%),
-    radial-gradient(circle, transparent 47%, rgba(246,253,255,.38) 61%, transparent 69%);
-  box-shadow: inset 0 0 19px rgba(251,254,255,.07), 0 0 52px rgba(238,252,255,.13);
-  will-change: transform, opacity;
-}
 .sky { touch-action: none; }
 .bottom-bar { touch-action: auto; }
 #cloud-text { touch-action: none; }
-@media (prefers-reduced-motion: reduce) { .wind-halo { display: none; } }
 
 /* v1.4 · The canvas is an interaction surface, not selectable web prose.
    v1.3 only disabled selection on glyphs; inter-word text nodes stayed selectable,
@@ -170,3 +153,15 @@ button, input { font: inherit; }
   .controls label { font-size: 9px; }
   .controls input[type="range"] { width: 58px; }
 }
+
+/* v1.5 — a closer letter and a dove instead of the circular wind indicator. */
+.composition {width:min(90vw,1080px); padding:38px 0 46px;}
+.text-plane {transform:translateZ(26px) rotateX(3.2deg) rotateY(-4.8deg);}
+#cloud-text {max-width:980px;font-size:clamp(27px,3vw,44px);line-height:1.62;}
+.messenger {position:fixed;top:0;left:0;z-index:4;width:135px;height:90px;opacity:0;pointer-events:none;transform:translate3d(-200px,-200px,0);will-change:transform,opacity;}
+.messenger svg {display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 4px 10px rgba(75,139,175,.16));}
+.dove-wing {transform-origin:81px 69px;animation:wing-beat .48s ease-in-out infinite alternate;}
+@keyframes wing-beat {from {transform:rotate(-9deg) scaleY(.95);} to {transform:rotate(17deg) scaleY(.66);}}
+@media(max-width:850px){.composition{width:min(92vw,880px);padding:30px 0 34px;}#cloud-text{font-size:clamp(23px,3.7vw,35px);line-height:1.58;}}
+@media(max-width:520px){.composition{width:90vw;padding:20px 0 30px;}.text-plane{transform:translateZ(16px) rotateX(1.7deg) rotateY(-1.5deg);}#cloud-text{font-size:clamp(17px,4.3vw,21px);line-height:1.52;}.messenger{width:100px;height:67px;}}
+@media(prefers-reduced-motion:reduce){.messenger{display:none;}}
