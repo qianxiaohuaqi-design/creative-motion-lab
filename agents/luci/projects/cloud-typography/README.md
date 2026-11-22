@@ -10,7 +10,7 @@ Live site: https://reina-motion-lab.netlify.app/
 
 ### Create
 - Click **编辑文字** to replace the prose (up to 1,200 graphemes). Supports Chinese, Latin text, punctuation and line breaks. Applying new text clears the former take.
-- **文字数量** repeats *only* the supplied copy to fill the scene, up to 300%. It does not invent extra words.
+- **文字数量** repeats *only* the supplied copy to fill the scene, up to 300%. It does not invent extra words. For device stability, at most 1,500 glyphs are instantiated; high-density scenes use a lower recording sample rate.
 - Chaos is **automatically progressive**; there is no chaos-intensity slider. **混乱速度** controls how quickly the progression occurs; 0 stops its progression.
 - A click dissolves one glyph; a press and drag summons the courier. **只送信** stirs the letters without dissolving them; **吹散云字** also allows local dissolution after sufficient exposure.
 - Empty-sky clicks have no destructive action. The explicit **吹散整段** button remains available.
@@ -21,7 +21,7 @@ Live site: https://reina-motion-lab.netlify.app/
 - Scroll to zoom the composition, not the bird. Bird size is independent of zoom.
 
 ### Playback & file output
-- Timeline stores approximately 15 snapshots per second using typed numeric arrays. Only the most recent 3 minutes are retained; **live creation does not stop** at 3 minutes.
+- Timeline stores up to approximately 15 snapshots per second using typed numeric arrays (fewer for especially dense scenes). Only the most recent 3 minutes are retained; **live creation does not stop** at 3 minutes.
 - Presets: **晨间微风**, **云中来信**, **漫天飞絮**. They begin a fresh take while keeping your text.
 - **保存设置 / 恢复设置** uses local browser storage. It is per browser/device; it is not cloud sync.
 - **保存画面**: PNG frame.

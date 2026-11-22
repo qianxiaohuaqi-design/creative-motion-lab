@@ -97,9 +97,16 @@
   function build() {
     letters.length=0;words.length=0;visibleWords=-1;activeCount=0;
     baseWords=parseWords(currentText);
-    wordPool=[...baseWords,...baseWords,...baseWords].map((token,i)=>({
-      value:token.value,sep:token.sep||(i===baseWords.length-1||i===baseWords.length*2-1?' ':'')
-    }));
+    // Density expands the author's copy; cap total glyph DOM nodes to avoid
+    // multi-thousand-element scenes and huge time-axis buffers on phones.
+    const candidates=[...baseWords,...baseWords,...baseWords];
+    wordPool=[];let glyphBudget=1500;
+    for(let i=0;i<candidates.length;i++){
+      const token=candidates[i],count=graphemes(token.value).length;
+      if(count>glyphBudget)break;
+      glyphBudget-=count;
+      wordPool.push({value:token.value,sep:token.sep||(i===baseWords.length-1||i===baseWords.length*2-1?' ':'')});
+    }
     paragraph.textContent='';
     wordPool.forEach((token,wi,all)=>{
       const wordText=token.value;
@@ -551,7 +558,9 @@
   }
   function capture(force=false){
     const t=Math.max(0,simNow-start);
-    if(!force&&t-lastSample<SAMPLE)return;
+    // Adapt snapshot frequency to the number of visible glyphs.
+    const sampleInterval=activeCount>=900?160:activeCount>=600?110:SAMPLE;
+    if(!force&&t-lastSample<sampleInterval)return;
     lastSample=t;
     const poses=new Float32Array(activeCount*6);
     for(let i=0;i<activeCount;i++)poses.set(letters[i].framePose,i*6);
