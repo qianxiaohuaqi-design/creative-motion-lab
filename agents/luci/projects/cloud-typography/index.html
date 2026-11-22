@@ -6,8 +6,9 @@
   <meta name="theme-color" content="#85c5e5">
   <meta name="description" content="Cloud Typography — a letter from the sky, drifting into cloud and wind.">
   <title>Cloud Typography · 云中来信</title>
-  <link rel="stylesheet" href="./style.css?v=2.3">
-  <script src="./script.js?v=2.3" defer></script>
+  <link rel="stylesheet" href="./style.css?v=2.4">
+  <script src="./script.js?v=2.4" defer></script>
+  <script src="./export.js?v=2.4" defer></script>
 </head>
 <body>
   <main class="sky" id="sky">
@@ -116,6 +117,22 @@
           </div>
         </div>
         <button id="gust-button" type="button">吹散整段 ↗</button>
+        <div class="creation-tools">
+          <div class="preset-bar" role="group" aria-label="动画场景预设">
+            <span class="tool-label">创作预设</span>
+            <button class="preset-button" data-preset="serene" type="button">晨间微风</button>
+            <button class="preset-button" data-preset="letters" type="button">云中来信</button>
+            <button class="preset-button" data-preset="storm" type="button">漫天飞絮</button>
+          </div>
+          <div class="save-bar">
+            <button id="save-config" type="button" title="将文字和当前参数保存在此浏览器">保存设置</button>
+            <button id="load-config" type="button" title="恢复上一次手动保存的文字和参数">恢复设置</button>
+            <button id="export-video" type="button" title="导出最近30秒，视频在浏览器内逐帧渲染录制">导出视频</button>
+            <button id="export-gif" type="button" title="导出最近8秒，轻量 GIF 动画">导出 GIF</button>
+            <button id="export-png" type="button" title="导出当前画面的无操作界面图片">保存画面</button>
+            <span id="export-status" role="status" aria-live="polite"></span>
+          </div>
+        </div>
       </div>
       <div class="transport">
         <button id="play-button" type="button">Ⅱ 暂停</button>

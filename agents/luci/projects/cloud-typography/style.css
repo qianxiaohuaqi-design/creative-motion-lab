@@ -295,3 +295,15 @@ button, input { font: inherit; }
 .sky.immersive #exit-immersive:hover{opacity:1;}
 @media(max-width:850px){.bottom-bar{max-width:100%;}.studio-top{align-items:flex-start;}.studio-top .camera-controls{margin-left:auto;}}
 @media(max-width:520px){.bottom-bar{padding-top:9px;}.studio-top{gap:5px;}.studio-top .camera-controls{margin-left:0;width:100%;justify-content:space-between;}.camera-controls #panel-toggle,.camera-controls #immersive-button{padding:6px 7px;}.hint{font-size:9px;}}
+
+/* v2.4 preset and export studio */
+.creation-tools{width:100%;display:grid;gap:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.24);}
+.preset-bar,.save-bar{display:flex;align-items:center;flex-wrap:wrap;gap:7px;}
+.tool-label{font-size:10px;font-weight:650;letter-spacing:.075em;margin-right:7px;opacity:.85;}
+.bottom-bar .preset-button{background:rgba(255,255,255,.095);}
+.bottom-bar .preset-button:hover{background:rgba(255,255,255,.26);}
+.bottom-bar .preset-button[aria-pressed="true"]{background:rgba(255,255,255,.88);color:#34799d;}
+.bottom-bar .save-bar button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.44);border-radius:999px;padding:7px 13px;color:#fff;font-size:11px;}
+.bottom-bar .save-bar #export-video,.bottom-bar .save-bar #export-gif{background:rgba(245,252,255,.25);}
+#export-status{display:inline-block;min-height:1em;line-height:1.45;font-size:10px;color:#fff;opacity:.86;}
+@media(max-width:520px){.creation-tools{gap:6px;}.preset-bar,.save-bar{gap:5px}.bottom-bar .save-bar button,.bottom-bar .preset-button{padding:7px 9px;font-size:10px;}#export-status{width:100%;}}

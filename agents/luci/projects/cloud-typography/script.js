@@ -1,4 +1,4 @@
-/** Cloud Typography v2.3 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v2.4 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -713,6 +713,32 @@
   window.addEventListener('resize',resize,{passive:true});
   reduced.addEventListener?.('change',()=>{field.strength=0;});
   document.addEventListener('visibilitychange',()=>{previousTick=performance.now();if(document.hidden){press.active=false;press.id=null;field.strength=0;stream.length=0;ctx.clearRect(0,0,vw,vh);if(messenger)messenger.style.opacity='0';}});
+  // Scene controls for the companion export module.
+  window.CloudMotionLab={
+    getFrames:()=>frames,
+    getScene:()=>({sky,letters,canvas,messenger,paragraph,currentText,original}),
+    getState:()=>({mode,playhead}),
+    freeze:()=>freeze(),
+    seek:t=>{const f=frameAt(t);showFrame(f);return f;},
+    restoreState:state=>{
+      if(state.mode==='live')returnLive();
+      else {mode='paused';playhead=state.playhead;showFrame(frameAt(playhead));syncTransport();}
+    },
+    getConfig:()=>({version:1,text:currentText,wind:+windRange.value,speed:+speedRange.value,radius:+radiusRange.value,density:+densityRange.value,birdSize:+birdSizeRange.value,doveDisperses,zoom:cameraZoom}),
+    applyConfig:cfg=>{
+      if(!cfg||typeof cfg!=='object')return false;
+      currentText=typeof cfg.text==='string'&&cfg.text.trim()&&graphemes(cfg.text.trim()).length<=1200?cfg.text.trim():currentText;
+      effects.clear();stream.length=0;build();
+      [[windRange,cfg.wind],[speedRange,cfg.speed],[radiusRange,cfg.radius],[densityRange,cfg.density],[birdSizeRange,cfg.birdSize]].forEach(([input,value])=>{
+        if(Number.isFinite(Number(value)))input.value=String(clamp(Number(value),+input.min,+input.max));
+      });
+      windValue.textContent=windRange.value;speedValue.textContent=(+speedRange.value).toFixed(1)+'×';radiusValue.textContent=radiusRange.value;
+      applyDensity(densityRange.value,true);applyBirdSize(birdSizeRange.value);
+      setDoveDispersal(cfg.doveDisperses!==false);
+      readControls();applyZoom(Number.isFinite(+cfg.zoom)?+cfg.zoom:1);
+      resetButton.click();return true;
+    }
+  };
   exitImmersive.tabIndex=-1;
   build(); applyDensity(densityRange.value,true);applyBirdSize(birdSizeRange.value);resize();start=simNow;
   windValue.textContent=String(wind);
