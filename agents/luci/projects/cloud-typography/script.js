@@ -1,4 +1,4 @@
-/** Cloud Typography v2.4 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v2.5 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -19,6 +19,7 @@
   const zoomValue = document.getElementById('zoom-value');
   const densityRange = document.getElementById('density-range');
   const densityValue = document.getElementById('density-value');
+  const densityNote = document.getElementById('density-note');
   const birdSizeRange = document.getElementById('bird-size-range');
   const birdSizeValue = document.getElementById('bird-size-value');
   const doveCalmButton = document.getElementById('dove-calm');
@@ -62,7 +63,8 @@
     }
     return result.length?result:[{value:' ',sep:''}];
   }
-  let density=+densityRange.value, activeCount=0, visibleWords=-1;
+  const MAX_GLYPHS=1500, MAX_COPIES=4;
+  let density=+densityRange.value, maxCopies=MAX_COPIES, activeCount=0, visibleWords=-1;
   let birdSize=+birdSizeRange.value;
   let doveDisperses=true;
   let cachedFitWidth=0,cachedFitHeight=0;
@@ -97,15 +99,20 @@
   function build() {
     letters.length=0;words.length=0;visibleWords=-1;activeCount=0;
     baseWords=parseWords(currentText);
-    // Density expands the author's copy; cap total glyph DOM nodes to avoid
-    // multi-thousand-element scenes and huge time-axis buffers on phones.
-    const candidates=[...baseWords,...baseWords,...baseWords];
-    wordPool=[];let glyphBudget=1500;
-    for(let i=0;i<candidates.length;i++){
-      const token=candidates[i],count=graphemes(token.value).length;
-      if(count>glyphBudget)break;
-      glyphBudget-=count;
-      wordPool.push({value:token.value,sep:token.sep||(i===baseWords.length-1||i===baseWords.length*2-1?' ':'')});
+    // Repeat FULL copies of the author's text. Never cut off a copy to fit a slider value.
+    // The range shrinks for very long texts instead of silently truncating the content.
+    const perCopy=baseWords.reduce((n,token)=>n+graphemes(token.value).length,0);
+    maxCopies=clamp(Math.floor(MAX_GLYPHS/Math.max(1,perCopy)),1,MAX_COPIES);
+    densityRange.max=String(maxCopies);
+    wordPool=[];
+    for(let copy=0;copy<maxCopies;copy++){
+      for(let i=0;i<baseWords.length;i++){
+        const token=baseWords[i];
+        const lastInCopy=i===baseWords.length-1;
+        // A visual separator at copy boundaries; original punctuation and newlines remain intact.
+        const sep=lastInCopy&&copy<maxCopies-1&&!token.sep?' ':token.sep;
+        wordPool.push({value:token.value,sep});
+      }
     }
     paragraph.textContent='';
     wordPool.forEach((token,wi,all)=>{
@@ -141,7 +148,7 @@
   // Use full words to avoid truncating glyph clusters or leaving broken word endings.
   function fitDensity(){
     const root=document.documentElement;
-    const spread=clamp((density-100)/200,0,1);
+    const spread=clamp((density-1)/3,0,1);
     root.style.setProperty('--letter-area-width',(90+spread*7)+'vw');
     root.style.setProperty('--letter-area-max',(1080+spread*680)+'px');
     root.style.setProperty('--letter-text-max',(980+spread*710)+'px');
@@ -160,8 +167,12 @@
     measure();
   }
   function applyDensity(value,force=false){
-    density=clamp(Number(value),50,300);
-    const count=Math.min(words.length,Math.max(1,Math.round(baseWords.length*density/100)));
+    const proposed=Number(value);
+    density=clamp(Number.isFinite(proposed)?Math.round(proposed):1,1,maxCopies);
+    densityRange.max=String(maxCopies);
+    densityRange.value=String(density);
+    densityRange.setAttribute('aria-valuetext',density+'份完整原文');
+    const count=baseWords.length*density;
     if(force||count!==visibleWords){
       visibleWords=count;
       activeCount=words[count-1].end;
@@ -175,7 +186,10 @@
       }
       fitDensity();
     }else if(cachedFitWidth!==vw||cachedFitHeight!==vh)fitDensity();
-    densityValue.textContent=activeCount+' 字母';
+    densityValue.textContent=density+'×';
+    densityNote.textContent=maxCopies<MAX_COPIES?
+      '文字较长 · 最多完整重复 '+maxCopies+'×':
+      '整段重复 · '+activeCount+' 个字形';
   }
   function applyBirdSize(value){
     birdSize=clamp(Number(value),30,180);
@@ -733,12 +747,16 @@
       if(state.mode==='live')returnLive();
       else {mode='paused';playhead=state.playhead;showFrame(frameAt(playhead));syncTransport();}
     },
-    getConfig:()=>({version:1,text:currentText,wind:+windRange.value,speed:+speedRange.value,radius:+radiusRange.value,density:+densityRange.value,birdSize:+birdSizeRange.value,doveDisperses,zoom:cameraZoom}),
+    getConfig:()=>({version:2,text:currentText,wind:+windRange.value,speed:+speedRange.value,radius:+radiusRange.value,density:+densityRange.value,birdSize:+birdSizeRange.value,doveDisperses,zoom:cameraZoom}),
     applyConfig:cfg=>{
       if(!cfg||typeof cfg!=='object')return false;
       currentText=typeof cfg.text==='string'&&cfg.text.trim()&&graphemes(cfg.text.trim()).length<=1200?cfg.text.trim():currentText;
       effects.clear();stream.length=0;build();
-      [[windRange,cfg.wind],[speedRange,cfg.speed],[radiusRange,cfg.radius],[densityRange,cfg.density],[birdSizeRange,cfg.birdSize]].forEach(([input,value])=>{
+      // Migrate v2.4 saved percent values (100–300%) to whole-copy multipliers.
+      const loadedDensity=Number(cfg.density);
+      const repeats=Number.isFinite(loadedDensity)?
+        (cfg.version===1||loadedDensity>MAX_COPIES?Math.round(loadedDensity/100):Math.round(loadedDensity)):1;
+      [[windRange,cfg.wind],[speedRange,cfg.speed],[radiusRange,cfg.radius],[densityRange,repeats],[birdSizeRange,cfg.birdSize]].forEach(([input,value])=>{
         if(Number.isFinite(Number(value)))input.value=String(clamp(Number(value),+input.min,+input.max));
       });
       windValue.textContent=windRange.value;speedValue.textContent=(+speedRange.value).toFixed(1)+'×';radiusValue.textContent=radiusRange.value;

@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#85c5e5">
   <meta name="description" content="Cloud Typography — a letter from the sky, drifting into cloud and wind.">
   <title>Cloud Typography · 云中来信</title>
-  <link rel="stylesheet" href="./style.css?v=2.4">
-  <script src="./script.js?v=2.4" defer></script>
+  <link rel="stylesheet" href="./style.css?v=2.5">
+  <script src="./script.js?v=2.5" defer></script>
   <script src="./export.js?v=2.4" defer></script>
 </head>
 <body>
@@ -107,7 +107,7 @@
         <div class="parameter"><label for="wind-range" title="白鸽带起的风力与云絮飘散速度">鸽翼风速 <output id="wind-value">4</output></label><input id="wind-range" type="range" min="0" max="20" step="1" value="4"></div>
         <div class="parameter"><label for="speed-range" title="文字从整齐过渡到混乱的速度">混乱速度 <output id="speed-value">1.0×</output></label><input id="speed-range" type="range" min="0" max="12" step=".5" value="1"></div>
         <div class="parameter reach-parameter"><label for="radius-range" title="白鸽气流的影响范围">气流范围 <output id="radius-value">200</output></label><input id="radius-range" type="range" min="60" max="360" step="10" value="200"></div>
-        <div class="parameter"><label for="density-range" title="独立字母数量；更多文字会向画面四周铺展">文字数量 <output id="density-value">100%</output></label><input id="density-range" type="range" min="50" max="300" step="25" value="100"></div>
+        <div class="parameter"><label for="density-range" title="把当前输入的整段文字完整重复，不添加其他内容">文本重复倍数 <output id="density-value">1×</output></label><input id="density-range" type="range" min="1" max="4" step="1" value="1" aria-label="当前文字完整重复的倍数"><small id="density-note" class="parameter-note" aria-live="polite">完整重复当前文字</small></div>
         <div class="parameter"><label for="bird-size-range" title="白鸽的屏幕尺寸，独立于滚轮镜头缩放">白鸽大小 <output id="bird-size-value">70px</output></label><input id="bird-size-range" type="range" min="30" max="180" step="5" value="70"></div>
         <div class="dove-mode" role="group" aria-label="白鸽与云字的互动模式">
           <span class="dove-mode-label">白鸽模式 <span class="mode-note">拂云或吹散</span></span>

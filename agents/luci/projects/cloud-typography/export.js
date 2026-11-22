@@ -9,9 +9,9 @@
   const status=document.getElementById('export-status');
   const buttons={save:document.getElementById('save-config'),load:document.getElementById('load-config'),video:document.getElementById('export-video'),gif:document.getElementById('export-gif'),png:document.getElementById('export-png')};
   const presets={
-    serene:{wind:3,speed:.5,radius:190,density:100,birdSize:70,doveDisperses:false,zoom:1},
-    letters:{wind:7,speed:2,radius:240,density:125,birdSize:80,doveDisperses:false,zoom:1.12},
-    storm:{wind:16,speed:7,radius:330,density:200,birdSize:100,doveDisperses:true,zoom:1}
+    serene:{wind:3,speed:.5,radius:190,density:1,birdSize:70,doveDisperses:false,zoom:1},
+    letters:{wind:7,speed:2,radius:240,density:2,birdSize:80,doveDisperses:false,zoom:1.12},
+    storm:{wind:16,speed:7,radius:330,density:3,birdSize:100,doveDisperses:true,zoom:1}
   };
   const storageKey='creative-motion-lab-cloud-typography-v2.4';
   let exporting=false,birdFrames=null;
