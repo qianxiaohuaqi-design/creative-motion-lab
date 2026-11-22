@@ -1,41 +1,50 @@
-# Cloud Typography｜云间来信 v1.1 — Windswept Letters
+# 云中来信 · Cloud Typography (Luci)
 
-这是 Luci 独立作品。参考思花《时间尽头的无序之书》的有序→失序概念，但使用原创文案、源码和美术表现。
+An interactive cloud-letter artwork built with HTML, CSS, and JavaScript. This folder is Luci's independent project. The other agent folders and the repository's shared configuration are not modified here.
 
-## v1.1 改动
-- 46 个英文单词、204 个独立字母对象；从短标题升级为长段落。
-- 将天空改成柔和灰蓝，收敛白字光晕。
-- 每个字母独立缓慢漂移和旋转；空间相关的连续风场与渐强失序，可调 WIND、DISORDER。
-- 点击**单个字母**，它被 Canvas 字形像素采样转成柔软云雾粒子，受风、卷曲和扩散影响散去。
-- 不自动重组，只有按“重新开始”才会复位。
-- 点击空白天空或“吹散整段”，触发一阵整体强风，字母按时间差接连飘走。
-- 保留原生 HTML/CSS/JS，零第三方依赖，支持桌面、手机、键盘和减少动态效果设置。
+Live site: https://reina-motion-lab.netlify.app/
 
-## 运行与代码
-直接浏览器打开 index.html，或在 VS Code 使用 Live Server。
-- index.html：长段落和交互控制。
-- style.css：灰蓝天空、云白字形、响应式布局。
-- script.js：字母拆分、连续风场、离屏字形采样、粒子与永久消散状态。
+## Release
 
-## 在线地址
-- Luci：https://reina-motion-lab.netlify.app/
-- Gemini：https://reina-motion-lab.netlify.app/gemini/
-- DeepSeek：https://reina-motion-lab.netlify.app/deepseek/
+**v2.4 — creator edition**, implemented on top of v2.1's articulated 2.5D bird, vapor wake and time-axis interaction.
 
-当前三个版本部署在不同路径；不要把 Gemini / DeepSeek 起始副本误认作各自完成的成品。
+### Create
+- Click **编辑文字** to replace the prose (up to 1,200 graphemes). Supports Chinese, Latin text, punctuation and line breaks. Applying new text clears the former take.
+- **文字数量** repeats *only* the supplied copy to fill the scene, up to 300%. It does not invent extra words.
+- Chaos is **automatically progressive**; there is no chaos-intensity slider. **混乱速度** controls how quickly the progression occurs; 0 stops its progression.
+- A click dissolves one glyph; a press and drag summons the courier. **只送信** stirs the letters without dissolving them; **吹散云字** also allows local dissolution after sufficient exposure.
+- Empty-sky clicks have no destructive action. The explicit **吹散整段** button remains available.
 
-## 验收
-参见 TESTING.md。浏览器本地测试过桌面 1440×900、手机 390×844、单字点击、不自动恢复、重置、整段吹散，未遇到 JavaScript 报错。实际观感仍由用户主观验收。
+### Present
+- Six old sliders became **five**: dove wind, chaos speed, airflow reach, text count, and independent dove screen size.
+- The parameter tray can be collapsed; **沉浸** hides the controls. Escape or the exit button restores them.
+- Scroll to zoom the composition, not the bird. Bird size is independent of zoom.
 
-## v1.3 鼠标/触摸长按风场
+### Playback & file output
+- Timeline stores approximately 15 snapshots per second using typed numeric arrays. Only the most recent 3 minutes are retained; **live creation does not stop** at 3 minutes.
+- Presets: **晨间微风**, **云中来信**, **漫天飞絮**. They begin a fresh take while keeping your text.
+- **保存设置 / 恢复设置** uses local browser storage. It is per browser/device; it is not cloud sync.
+- **保存画面**: PNG frame.
+- **导出 GIF**: up to 8 seconds, 10 fps, 640×360 landscape / 360×640 portrait, palette-indexed GIF89a.
+- **导出视频**: up to 30 seconds, 20 fps, 960×540 landscape / 540×960 portrait. Uses MediaRecorder with supported WebM or MP4 mime types. The browser must support Canvas captureStream + MediaRecorder.
+- Exports are clean **canvas renderings** of the recorded scene, not pixel-perfect screenshots of DOM/CSS. They include glyphs, visual mist, articulated dove frames and main composition text but intentionally exclude all controls. Some perspective/font details may differ from the live scene. Video export processes at real-time speed.
+- Browser export errors are surfaced in the status area. It does not upload content to a server.
 
-- 短点击单个字母：仍然仅触发该字母的永久消散。
-- 长按（约 270 ms）开始局部风场；持续按住时风力和影响半径逐渐增大，邻近字母会平滑漂移、旋转。
-- 长按并拖动：移动光标可以改变风向并连续吹动路径附近的字母；积累足够风力的字母会变成云雾粒子，永久消失。
-- 松开：风力余波逐渐衰减，未消散的字母缓慢稳定下来。
-- 点击“重新开始”：同时重置字母消散状态、风场以及余波。
-- 同样支持触屏长按和拖动；已有的 WIND / DISORDER 以及独立强风按钮继续有效。
+## Development
 
-**技术说明：** 使用 Pointer Events，按住与拖动产生连续的局部方向风场；按距离衰减的力影响字母的额外位移与转角，并通过累积受风剂量决定是否散开。使用 Canvas 和 CSS 显示柔和风圈/云絮。支持系统减少动态效果偏好。
+Open index.html in a modern Chromium, Firefox, or Safari browser. No build step, external runtime, or CDN dependency. The page loads script.js and export.js.
 
-**本地验收：** Chromium 桌面和 390px 手机仿真，单字点击、按住、拖动、重置与脚本异常检查均通过；生产环境仍需人工审美验收。
+## QA checklist
+
+1. Enter Chinese/English lines; save, reset, and re-edit. Verify no leftover old letters or obsolete replay history.
+2. Set chaos speed to 0, then 12. Check that progression stops/accelerates and that it never removes letters by itself.
+3. Use the two dove modes on identical text. Both must push/rotate glyphs; only the dispersing mode removes them.
+4. Rotate/swipe/zoom on small and large screens; bird size must stay independent.
+5. Toggle panel and immersive, including Escape; check focus and text editor interaction.
+6. Interact for over three minutes. Verify the live artwork keeps running and only the rolling replay window moves.
+7. Replay the dove's wing pose and custom text, then resume from the most recent frame.
+8. Test PNG, GIF and video exports, inspect actual produced files in the target browser, and compare their layout to the live scene.
+9. Save settings, change presets, restore them and refresh the page. Confirm the stored snapshot can be restored manually.
+10. Verify network/resource constraints and performance on a real phone, especially 300% text density.
+
+Automated API/logic simulations and syntax validation were run during development; **actual browser visual and media-codec acceptance remains outstanding**.

@@ -96,15 +96,29 @@
     const scale=Math.min(w/vw,h/vh),ox=(w-vw*scale)/2,oy=(h-vh*scale)/2;
     out.save();out.translate(ox,oy);out.scale(scale,scale);
     const style=getComputedStyle(scene.paragraph),fontSize=parseFloat(style.fontSize)||30;
-    out.textAlign='center';out.textBaseline='middle';out.font=(style.fontWeight||'650')+' '+fontSize+'px '+(style.fontFamily||'Arial');
+    out.textAlign='center';out.textBaseline='middle';
+    out.font=(style.fontWeight||'650')+' '+(fontSize*frame.zoom)+'px '+(style.fontFamily||'Arial');
     out.fillStyle='rgba(255,255,255,.96)';out.shadowColor='rgba(255,255,255,.42)';out.shadowBlur=8;
+    const poses=frame.poses;
     for(const item of scene.letters){
       if(!item.active||item.el.classList.contains('gone'))continue;
       const rect=item.el.getBoundingClientRect();
       if(rect.right<0||rect.bottom<0||rect.left>vw||rect.top>vh)continue;
-      out.fillText(item.el.textContent,rect.left+rect.width/2,rect.top+rect.height/2);
+      out.save();out.translate(rect.left+rect.width/2,rect.top+rect.height/2);
+      // Reproduce the recorded Z rotation; DOM projection provides screen-space position.
+      const ix=item.index*6;
+      if(poses&&poses.length>=ix+6)out.rotate(poses[ix+5]*Math.PI/180);
+      out.fillText(item.el.textContent,0,0);out.restore();
     }
     out.shadowBlur=0;
+    // Preserve the editorial framing of the artwork, not its operation controls.
+    for(const sel of ['.eyebrow','.subtitle']){
+      const el=document.querySelector(sel);if(!el)continue;
+      const rect=el.getBoundingClientRect(),s=getComputedStyle(el);
+      out.save();out.font=(s.fontWeight||'500')+' '+(parseFloat(s.fontSize)||12)*frame.zoom+'px '+(s.fontFamily||'Arial');
+      out.fillStyle='rgba(255,255,255,.75)';out.shadowBlur=0;out.fillText(el.textContent,rect.left+rect.width/2,rect.top+rect.height/2);
+      out.restore();
+    }
     if(scene.canvas.width&&scene.canvas.height)out.drawImage(scene.canvas,0,0,vw,vh);
     const match=/translate3d\((-?[\d.]+)px,(-?[\d.]+)px/.exec(frame.birdTransform||'');
     if(match&&Number(frame.birdOpacity)>.01&&birds.length){
@@ -183,7 +197,7 @@
     if(!frames.length){setStatus('没有可导出的画面。');return;}
     exporting=true;
     const prior=app.getState();
-    const all=[buttons.video,buttons.gif,buttons.png,...document.querySelectorAll('.preset-button')];
+    const all=[buttons.save,buttons.load,buttons.video,buttons.gif,buttons.png,...document.querySelectorAll('.preset-button')];
     all.forEach(b=>b.disabled=true);
     let stream=null;
     try{
