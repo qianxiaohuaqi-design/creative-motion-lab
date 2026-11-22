@@ -1,4 +1,4 @@
-/** Cloud Typography v2.1 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v2.2 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -7,7 +7,6 @@
   const paragraph = document.getElementById('cloud-text');
   const canvas = document.getElementById('mist-canvas');
   const windRange = document.getElementById('wind-range');
-  const chaosRange = document.getElementById('chaos-range');
   const radiusRange = document.getElementById('radius-range');
   const speedRange = document.getElementById('speed-range');
   const speedValue = document.getElementById('speed-value');
@@ -25,22 +24,40 @@
   const doveCalmButton = document.getElementById('dove-calm');
   const doveWindButton = document.getElementById('dove-wind');
   const windValue = document.getElementById('wind-value');
-  const chaosValue = document.getElementById('chaos-value');
   const radiusValue = document.getElementById('radius-value');
+  const editTextButton = document.getElementById('edit-text');
+  const editor = document.getElementById('text-editor');
+  const editorInput = document.getElementById('editor-input');
+  const editorCount = document.getElementById('editor-count');
+  const editorApply = document.getElementById('editor-apply');
+  const editorClose = document.getElementById('editor-close');
+  const editorCancel = document.getElementById('editor-cancel');
+  const editorDefault = document.getElementById('editor-default');
   const gustButton = document.getElementById('gust-button');
   const resetButton = document.getElementById('reset-button');
   const status = document.getElementById('live-status');
   const messenger = document.getElementById('messenger');
-  if (!sky || !paragraph || !canvas || !windRange || !chaosRange || !radiusRange || !radiusValue || !speedRange || !speedValue || !timeline || !playButton || !replayButton || !liveButton || !resetButton || !densityRange || !densityValue || !birdSizeRange || !birdSizeValue || !doveCalmButton || !doveWindButton) return;
+  if (!sky || !paragraph || !canvas || !windRange || !radiusRange || !radiusValue || !speedRange || !speedValue || !timeline || !playButton || !replayButton || !liveButton || !resetButton || !densityRange || !densityValue || !birdSizeRange || !birdSizeValue || !doveCalmButton || !doveWindButton) return;
   const ctx = canvas.getContext('2d', {alpha:true});
   if (!ctx) return;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const original = paragraph.textContent.replace(/\s+/g, ' ').trim();
+  const original = paragraph.textContent.replace(/\s+/g,' ').trim();
+  let currentText=original;
   const letters = [];
   const words = [];
-  const baseWords=original.split(' ');
-  const additionalWords=("Somewhere above the quiet roofs, a small white wing carries the promise of a distant morning. The envelope holds no address, only the warmth of a thought left unsaid. Across the wide blue, the wind unfolds the pages, and every word becomes a tiny cloud on its way home. If you listen to the silence between the lines, you may hear the sky whisper your name. Nothing here is lost; even the words that drift beyond the horizon may reach another light, another open window, another heart waiting for a letter.").split(' ');
-  const wordPool=baseWords.concat(additionalWords,baseWords).slice(0,baseWords.length*3);
+  let baseWords=[],wordPool=[];
+  const segmenter=typeof Intl.Segmenter==='function'?new Intl.Segmenter('zh',{granularity:'grapheme'}):null;
+  const graphemes=text=>segmenter?Array.from(segmenter.segment(text),s=>s.segment):Array.from(text);
+  function parseWords(text){
+    const tokens=text.replace(/\r\n?/g,'\n').match(/[\p{Script=Han}]|[^\s\p{Script=Han}]+|[ \t]+|\n/gu)||[];
+    const result=[];
+    for(const token of tokens){
+      if(token==='\n'){result.push({value:'',sep:'\n'});continue;}
+      if(/^[ \t]+$/.test(token)){if(result.length&&result[result.length-1].sep!=='\n')result[result.length-1].sep=' ';continue;}
+      result.push({value:token,sep:''});
+    }
+    return result.length?result:[{value:' ',sep:''}];
+  }
   let density=+densityRange.value, activeCount=0, visibleWords=-1;
   let birdSize=+birdSizeRange.value;
   let doveDisperses=true;
@@ -53,7 +70,6 @@
   const smooth = t => { t = clamp(t,0,1); return t*t*(3-2*t); };
   const random = v => { const f = Math.sin(v * 117.17 + 29.3) * 43758.5; return f - Math.floor(f); };
   let wind = +windRange.value;
-  let disorder = +chaosRange.value / 100;
   let chaosSpeed = +speedRange.value;
   let chaosClock=0, cameraZoom=1;
   // Record actual rendered simulation states, not a screen recording.
@@ -74,12 +90,18 @@
   let suppressClicksUntil = 0;
 
   function build() {
-    paragraph.textContent = '';
-    wordPool.forEach((wordText, wi, all) => {
+    letters.length=0;words.length=0;visibleWords=-1;activeCount=0;
+    baseWords=parseWords(currentText);
+    wordPool=[...baseWords,...baseWords,...baseWords].map((token,i)=>({
+      value:token.value,sep:token.sep||(i===baseWords.length-1||i===baseWords.length*2-1?' ':'')
+    }));
+    paragraph.textContent='';
+    wordPool.forEach((token,wi,all)=>{
+      const wordText=token.value;
       const word = document.createElement('span');
       word.className = 'word';
       const first=letters.length;
-      for (const char of wordText) {
+      for (const char of graphemes(wordText)) {
         const el = document.createElement('span');
         el.className = 'letter';
         el.textContent = char;
@@ -97,8 +119,8 @@
       }
       paragraph.append(word);
       const space=document.createElement('span');
-      space.textContent=' ';
-      space.className='word-gap';
+      space.textContent=token.sep==='\n'?'':token.sep;
+      space.className=token.sep==='\n'?'line-break':'word-gap';
       paragraph.append(space);
       words.push({word,space,first,end:letters.length});
     });
@@ -234,7 +256,7 @@
       const pt=selected[i], r1=random(i*.79+seed),r2=random(i*2.13+seed),r3=random(i*3.3+seed);
       const drift=(110+r1*210)*strength;
       const dx=flowX*drift+(r2-.5)*34;
-      const dy=flowY*drift+(r2-.5)*(85+disorder*140);
+      const dy=flowY*drift+(r2-.5)*(85+Math.min(2.5,chaosClock/35000)*80);
       particles.push({x:cx+pt.x,y:cy+pt.y,dx,dy,depth:(r3-.62)*210,
         curl:(r2-.5)*85,phase:r1*6.283,radius:3.5+r2*7.0,alpha:.35+r3*.48,
         soft:r3>.55});
@@ -438,8 +460,8 @@
       dissolve(item);
       return;
     }
-    if(e.target.closest?.('.composition'))return;
-    gust();
+    // Empty sky is safe: a full-scene gust requires its explicit button.
+    return;
   });
   // A fading directional wake, rather than a circular UI indicator.
   // Vapor wake: elongated soft sprites have no strokes, rings, or hard boundaries.
@@ -519,7 +541,7 @@
     liveButton.disabled=mode==='live'||duration>=MAX_TAKE;
     replayButton.disabled=frames.length<2;
     playButton.disabled=mode==='paused'&&frames.length<2;
-    for(const el of [windRange,speedRange,chaosRange,radiusRange,densityRange,birdSizeRange,doveCalmButton,doveWindButton,gustButton,document.getElementById('zoom-in'),document.getElementById('zoom-out')])el.disabled=mode!=='live';
+    for(const el of [windRange,speedRange,radiusRange,densityRange,birdSizeRange,doveCalmButton,doveWindButton,gustButton,document.getElementById('zoom-in'),document.getElementById('zoom-out')])el.disabled=mode!=='live';
   }
   function capture(force=false){
     const t=Math.max(0,simNow-start);
@@ -528,24 +550,24 @@
     frames.push({t,now:simNow,zoom:cameraZoom,transforms:letters.slice(0,activeCount).map(i=>i.el.style.transform),gone:Uint8Array.from(letters.slice(0,activeCount),i=>+i.gone),effects:Array.from(effects),stream:stream.slice(),
       birdTransform:messenger.style.transform,birdOpacity:messenger.style.opacity,
       pose:['--wing-angle','--far-wing-angle','--tail-angle','--head-angle','--envelope-angle','--bird-bob'].map(name=>document.documentElement.style.getPropertyValue(name)),
-      controls:[windRange.value,speedRange.value,chaosRange.value,radiusRange.value,densityRange.value,birdSizeRange.value,doveDisperses?1:0]});
+      controls:[windRange.value,speedRange.value,radiusRange.value,densityRange.value,birdSizeRange.value,doveDisperses?1:0]});
     syncTransport();
   }
   function showFrame(frame,interactive=false){
     if(!frame)return;
     applyZoom(frame.zoom);
-    applyDensity(frame.controls[4]);
-    applyBirdSize(frame.controls[5]);
+    applyDensity(frame.controls[3]);
+    applyBirdSize(frame.controls[4]);
     // Playback restores the recorded mode without modifying the historical glyph transforms.
-    doveDisperses=Boolean(Number(frame.controls[6]));
+    doveDisperses=Boolean(Number(frame.controls[5]));
     doveCalmButton.setAttribute('aria-pressed',String(!doveDisperses));
     doveWindButton.setAttribute('aria-pressed',String(doveDisperses));
     for(let i=0;i<activeCount;i++){const el=letters[i].el;el.style.transform=frame.transforms[i]||'';el.classList.toggle('gone',!!frame.gone[i]);el.tabIndex=interactive&&!frame.gone[i]?0:-1;}
     messenger.style.transform=frame.birdTransform;messenger.style.opacity=frame.birdOpacity;
     const poseKeys=['--wing-angle','--far-wing-angle','--tail-angle','--head-angle','--envelope-angle','--bird-bob'];
     if(frame.pose)poseKeys.forEach((name,i)=>document.documentElement.style.setProperty(name,frame.pose[i]));
-    [windRange,speedRange,chaosRange,radiusRange,densityRange,birdSizeRange].forEach((el,i)=>el.value=frame.controls[i]);
-    windValue.textContent=windRange.value;speedValue.textContent=Number(speedRange.value).toFixed(1)+'×';chaosValue.textContent=chaosRange.value+'%';radiusValue.textContent=radiusRange.value;
+    [windRange,speedRange,radiusRange,densityRange,birdSizeRange].forEach((el,i)=>el.value=frame.controls[i]);
+    windValue.textContent=windRange.value;speedValue.textContent=Number(speedRange.value).toFixed(1)+'×';radiusValue.textContent=radiusRange.value;
     particlesFrame(frame.now,frame);
   }
   function frameAt(time){
@@ -564,7 +586,7 @@
     if(fromStart||playhead>=end-1)playhead=0;
     mode='replay';playbackLast=performance.now();showFrame(frameAt(playhead));syncTransport();
   }
-  function readControls(){wind=+windRange.value;chaosSpeed=+speedRange.value;disorder=+chaosRange.value/100;radiusSetting=+radiusRange.value;field.radius=radiusSetting;}
+  function readControls(){wind=+windRange.value;chaosSpeed=+speedRange.value;radiusSetting=+radiusRange.value;field.radius=radiusSetting;}
   function returnLive(){
     if(mode==='live'||!frames.length||frames[frames.length-1].t>=MAX_TAKE)return;
     const tail=frames[frames.length-1];showFrame(tail,true);readControls();
@@ -596,7 +618,7 @@
       chaosClock+=dt*chaosSpeed;
       updateLocalWind(now,dt);
       const elapsed=now-start;
-      const chaos=disorder*smooth(chaosClock/30000);
+      const chaos=2.8*(1-Math.exp(-chaosClock/42000));
       const calm=.10+.90*smooth((elapsed-900)/12000);
       const stageScale=clamp(vw/1080,.42,1);
       const breeze=stageScale;
@@ -628,11 +650,29 @@
     requestAnimationFrame(animate);
   }
   windRange.addEventListener('input',()=>{wind=+windRange.value;windValue.textContent=String(wind);});
-  chaosRange.addEventListener('input',()=>{disorder=+chaosRange.value/100;chaosValue.textContent=chaosRange.value+'%';});
   speedRange.addEventListener('input',()=>{chaosSpeed=+speedRange.value;speedValue.textContent=chaosSpeed.toFixed(1)+'×';});
   radiusRange.addEventListener('input',()=>{radiusSetting=+radiusRange.value;field.radius=radiusSetting;radiusValue.textContent=String(radiusSetting);});
   densityRange.addEventListener('input',()=>{if(mode==='live')applyDensity(densityRange.value);});
   birdSizeRange.addEventListener('input',()=>{if(mode==='live')applyBirdSize(birdSizeRange.value);});
+  const updateEditorCount=()=>{editorCount.textContent=graphemes(editorInput.value).length+' / 1200';};
+  function closeEditor(){editor.hidden=true;editTextButton.focus();}
+  editTextButton.addEventListener('click',()=>{if(mode!=='live')return;editorInput.value=currentText;editor.hidden=false;updateEditorCount();editorInput.focus();});
+  editorClose.addEventListener('click',closeEditor);
+  editorCancel.addEventListener('click',closeEditor);
+  editorDefault.addEventListener('click',()=>{editorInput.value=original;updateEditorCount();});
+  editorInput.addEventListener('input',updateEditorCount);
+  editor.addEventListener('pointerdown',e=>e.stopPropagation());
+  editor.addEventListener('click',e=>{if(e.target===editor)closeEditor();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!editor.hidden)closeEditor();});
+  editorApply.addEventListener('click',()=>{
+    const next=editorInput.value.trim();
+    if(!next||graphemes(next).length>1200){editorInput.focus();return;}
+    closeEditor();if(next===currentText)return;
+    currentText=next;effects.clear();stream.length=0;
+    build();applyDensity(densityRange.value,true);
+    resetButton.click();
+    if(status)status.textContent='已更新天空文案，新一轮创作开始。';
+  });
   resetButton.addEventListener('click',()=>{
     effects.clear();gusting=false;mode='live';document.documentElement.classList.remove('take-paused');readControls();start=simNow;chaosClock=0;frames.length=0;lastSample=-Infinity;playhead=0;previousTick=performance.now();
     press.active=false;press.id=null;field.strength=0;field.x=-1000;field.y=-1000;
@@ -646,7 +686,7 @@
   document.addEventListener('visibilitychange',()=>{previousTick=performance.now();if(document.hidden){press.active=false;press.id=null;field.strength=0;stream.length=0;ctx.clearRect(0,0,vw,vh);if(messenger)messenger.style.opacity='0';}});
   build(); applyDensity(densityRange.value,true);applyBirdSize(birdSizeRange.value);resize();start=simNow;
   windValue.textContent=String(wind);
-  chaosValue.textContent=chaosRange.value+'%';speedValue.textContent=chaosSpeed.toFixed(1)+'×';
+  speedValue.textContent=chaosSpeed.toFixed(1)+'×';
   radiusValue.textContent=String(radiusSetting);
   setDoveDispersal(true);applyZoom(1);capture(true);
   requestAnimationFrame(animate);

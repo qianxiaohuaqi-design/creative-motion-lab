@@ -258,3 +258,24 @@ button, input { font: inherit; }
   .dove-wing,.dove-far-wing,.dove-tail,.dove-head,.dove-envelope {transform:none!important;}
   .messenger svg {transform:none!important;}
 }
+
+/* v2.2 custom copy editor */
+.camera-controls #edit-text{font-size:11px;padding:7px 12px;margin-right:8px;}
+.text-editor[hidden]{display:none!important}
+.text-editor{position:fixed;inset:0;z-index:12;display:grid;place-items:center;padding:16px;background:rgba(25,83,119,.34);backdrop-filter:blur(10px);touch-action:auto;}
+.editor-card{width:min(580px,96vw);padding:clamp(18px,3vw,32px);border-radius:23px;border:1px solid rgba(255,255,255,.6);background:linear-gradient(145deg,rgba(241,250,255,.97),rgba(214,237,250,.96));box-shadow:0 24px 65px rgba(35,91,124,.23);color:#386b89;}
+.editor-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;}
+.editor-kicker{font-size:10px;letter-spacing:.2em;color:#7195aa;margin:0 0 9px;}
+.editor-heading h2{font-weight:600;font-size:clamp(20px,3vw,27px);margin:0;}
+.editor-heading button{font-size:24px;border:0;background:transparent;color:#587d92;cursor:pointer;}
+.editor-help{font-size:12px;line-height:1.7;opacity:.78;margin:14px 0;}
+.text-editor textarea{box-sizing:border-box;width:100%;max-height:43vh;min-height:130px;resize:vertical;border-radius:14px;border:1px solid rgba(92,151,185,.35);outline:0;padding:15px 17px;background:rgba(255,255,255,.79);color:#2f5f79;font-size:16px;line-height:1.7;-webkit-user-select:text;user-select:text;touch-action:auto;}
+.text-editor textarea:focus{border-color:#5ca7cd;box-shadow:0 0 0 3px rgba(95,171,210,.12);}
+.editor-bottom{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap;}
+#editor-count{font-size:11px;opacity:.7;}
+.editor-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.editor-actions button{cursor:pointer;border-radius:100px;padding:9px 14px;background:rgba(255,255,255,.72);color:#426f88;border:1px solid rgba(107,162,192,.25);font-size:12px;}
+.editor-actions .editor-primary{background:#478eb5;color:#fff;border-color:#478eb5;}
+#cloud-text .word-gap[hidden],#cloud-text .line-break[hidden]{display:none!important;}
+#cloud-text .line-break{display:block;height:0;width:100%;}
+@media(max-width:520px){.camera-controls #edit-text{font-size:10px;padding:6px 9px;margin-right:2px;}.editor-card{padding:18px;}.editor-actions{width:100%;}.editor-actions button{flex:1 1 auto;}}

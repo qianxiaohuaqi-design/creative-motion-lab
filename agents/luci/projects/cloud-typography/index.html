@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#85c5e5">
   <meta name="description" content="Cloud Typography — a letter from the sky, drifting into cloud and wind.">
   <title>Cloud Typography · 云中来信</title>
-  <link rel="stylesheet" href="./style.css?v=2.1">
-  <script src="./script.js?v=2.1" defer></script>
+  <link rel="stylesheet" href="./style.css?v=2.2">
+  <script src="./script.js?v=2.2" defer></script>
 </head>
 <body>
   <main class="sky" id="sky">
@@ -100,12 +100,11 @@
     <footer class="bottom-bar">
       <div class="studio-top">
         <div class="hint"><span class="hint-symbol" aria-hidden="true">✧</span> 点击字母 · 长按召唤白鸽 · 滚轮拉近或拉远</div>
-        <div class="camera-controls"><button id="zoom-out" type="button" aria-label="拉远镜头">−</button><output id="zoom-value">100%</output><button id="zoom-in" type="button" aria-label="拉近镜头">+</button></div>
+        <div class="camera-controls"><button id="edit-text" type="button">✎ 编辑文字</button><button id="zoom-out" type="button" aria-label="拉远镜头">−</button><output id="zoom-value">100%</output><button id="zoom-in" type="button" aria-label="拉近镜头">+</button></div>
       </div>
       <div class="controls">
         <div class="parameter"><label for="wind-range" title="白鸽带起的风力与云絮飘散速度">鸽翼风速 <output id="wind-value">4</output></label><input id="wind-range" type="range" min="0" max="20" step="1" value="4"></div>
         <div class="parameter"><label for="speed-range" title="文字从整齐过渡到混乱的速度">混乱速度 <output id="speed-value">1.0×</output></label><input id="speed-range" type="range" min="0" max="12" step=".5" value="1"></div>
-        <div class="parameter"><label for="chaos-range" title="字母最大位移、旋转和纵深变化">混乱程度 <output id="chaos-value">70%</output></label><input id="chaos-range" type="range" min="0" max="400" step="10" value="70"></div>
         <div class="parameter reach-parameter"><label for="radius-range" title="白鸽气流的影响范围">气流范围 <output id="radius-value">200</output></label><input id="radius-range" type="range" min="60" max="360" step="10" value="200"></div>
         <div class="parameter"><label for="density-range" title="独立字母数量；更多文字会向画面四周铺展">文字数量 <output id="density-value">100%</output></label><input id="density-range" type="range" min="50" max="300" step="25" value="100"></div>
         <div class="parameter"><label for="bird-size-range" title="白鸽的屏幕尺寸，独立于滚轮镜头缩放">白鸽大小 <output id="bird-size-value">70px</output></label><input id="bird-size-range" type="range" min="30" max="180" step="5" value="70"></div>
@@ -126,6 +125,14 @@
         <button id="reset-button" type="button">新一轮 ↺</button>
       </div>
     </footer>
+    <div class="text-editor" id="text-editor" hidden>
+      <section class="editor-card" role="dialog" aria-modal="true" aria-labelledby="editor-title">
+        <div class="editor-heading"><div><p class="editor-kicker">WORDS IN THE SKY</p><h2 id="editor-title">写一封云中的信</h2></div><button id="editor-close" aria-label="关闭编辑器">×</button></div>
+        <p class="editor-help">支持中文、英文、标点和换行。应用新文字会清空此前的回放并开始新一轮。</p>
+        <textarea id="editor-input" rows="7" maxlength="1200" spellcheck="false" placeholder="写下你想放进天空的文字……"></textarea>
+        <div class="editor-bottom"><span id="editor-count"></span><div class="editor-actions"><button id="editor-default">恢复默认</button><button id="editor-cancel">取消</button><button id="editor-apply" class="editor-primary">应用并开始</button></div></div>
+      </section>
+    </div>
     <div class="sr-only" id="live-status" aria-live="polite" aria-atomic="true"></div>
   </main>
 </body>
