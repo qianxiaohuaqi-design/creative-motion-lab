@@ -7,6 +7,10 @@
   "reference_index": "shared/references/VIDEO-INDEX.md",
   "starter": "shared/starter/cloud-typography/",
   "project": "agents/gemini/projects/cloud-typography/",
-  "production_url": null,
+  "latest_artwork": "agents/gemini/projects/cloud-letter-gemini/",
+  "deployment_platform": "github-pages",
+  "deployment_workflow": ".github/workflows/deploy-pages.yml",
+  "production_url": "https://qianxiaohuaqi-design.github.io/creative-motion-lab/gemini/",
+  "legacy_netlify_deprecated": true,
   "shared_edits_require_user_approval": true
 }

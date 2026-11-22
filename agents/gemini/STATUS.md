@@ -1,31 +1,30 @@
 # Gemini Agent Progress (`agents/gemini/STATUS.md`)
 
-## 当前最新作品：《云中来信》（Cloud Letter — Gemini Edition）
+## 部署平台与上线信息（2026-11-22 已同步迁移）
 
-- **状态**：已提交至 GitHub `main` 分支；独立 Netlify 站点 `cloud-letter-gemini` 已创建（待在 Netlify 控制台绑定仓库子目录即可自动构建上线）
+- **当前主要部署平台**：GitHub Pages（通过 `.github/workflows/deploy-pages.yml` 在 `main` 分支自动触发构建与部署）
+- **原平台状态**：Netlify 因免费额度耗尽，已停止作为主要部署渠道（不再按旧 Netlify 流程发布，不修改 Netlify 配置）
+- **GitHub 仓库**：`https://github.com/qianxiaohuaqi-design/creative-motion-lab`（Public，分支 `main`）
+- **Gemini 作品入口**：`https://qianxiaohuaqi-design.github.io/creative-motion-lab/gemini/`
+- **隔离边界**：仅维护 `agents/gemini/` 内文件，不触碰 `agents/luci/`、`agents/deepseek/`、`shared/` 及共享部署工作流
+
+## 当前目录与部署映射核查
+
+| 目录 | 内容状态 | 相对路径兼容性 | 当前是否由 `deploy-pages.yml` 发布到 `/gemini/` |
+| --- | --- | --- | --- |
+| `agents/gemini/projects/cloud-typography/` | Lesson 01 起始模板（蓝天静态标题 + 5 单词拆分） | 已使用 `./style.css`、`./script.js`（兼容子路径） | **是**（当前工作流与 `build-cloudflare.sh` 复制此目录） |
+| `agents/gemini/projects/cloud-letter-gemini/` | 《云中来信》Gemini 独立互动艺术成品 | 已使用 `./style.css`、`./script.js`，无外部依赖（兼容子路径） | **否**（待用户确认：同步至 `cloud-typography/` 或调整共享工作流） |
+| `agents/gemini/projects/ai-video/` | AI 视频预留空间（暂无成品） | — | 否 |
+
+## 最新独立作品：《云中来信》（Cloud Letter — Gemini Edition）
+
 - **代码路径**：`agents/gemini/projects/cloud-letter-gemini/`
-- **独立 Netlify 站点**：`https://cloud-letter-gemini.netlify.app`（管理页：`https://app.netlify.com/projects/cloud-letter-gemini`）
-- **隔离状态**：仅改动 `agents/gemini/` 内文件，未触碰 `agents/luci/**`、`agents/deepseek/**`、根路径文件（Luci 生产站点 `reina-motion-lab`）及 `shared/` 共享内容
-
-## 已提交文件清单
-
-- `agents/gemini/projects/cloud-letter-gemini/index.html`
-- `agents/gemini/projects/cloud-letter-gemini/style.css`
-- `agents/gemini/projects/cloud-letter-gemini/script.js`
-- `agents/gemini/projects/cloud-letter-gemini/README.md`
-- `agents/gemini/STATUS.md`
-
-## 核心特性自检
-
-- [x] 明亮通透晴空背景 + 远中近景流云 + 轻微 3D 镜头视差，构图更近、更沉浸
-- [x] 英文书信按单个字母拆分为独立对象，离屏多层柔焦实现云雾边缘与柔和 3D 空间感
-- [x] 单击/轻触字母后沿笔画轮廓化雾永久消散，不自动恢复
-- [x] 长按召唤半抽象白鸽剪影携小信封，带翅膀扇动与掠过滑翔感
-- [x] 取消圆形光圈，采用流线风痕、云丝拖尾与定向空气尾流卷散、雾化并带走文字
-- [x] 控制区保留 `WIND`、`DISORDER`、`REACH`、`RESET` 及中英文说明与 tooltip
-- [x] 纯 HTML / CSS / JS，兼容桌面鼠标与手机触控，修复拖拽选中文字与蓝色竖条问题
-
-## 其他既有目录（未覆盖）
-
-- `agents/gemini/projects/cloud-typography/`
-- `agents/gemini/projects/ai-video/`
+- **包含文件**：`index.html`、`style.css`、`script.js`、`README.md`
+- **核心特性自检**：
+  - [x] 明亮通透晴空背景 + 远中近景流云 + 轻微 3D 镜头视差，构图更近、更沉浸
+  - [x] 英文书信按单个字母拆分为独立对象，离屏多层柔焦实现云雾边缘与柔和 3D 空间感
+  - [x] 单击/轻触字母后沿笔画轮廓化雾永久消散，不自动恢复
+  - [x] 长按召唤半抽象白鸽剪影携小信封，带翅膀扇动与掠过滑翔感
+  - [x] 取消圆形光圈，采用流线风痕、云丝拖尾与定向空气尾流卷散、雾化并带走文字
+  - [x] 控制区保留 `WIND`、`DISORDER`、`REACH`、`RESET` 及中英文说明与 tooltip
+  - [x] 纯 HTML / CSS / JS，全部采用相对路径，兼容 GitHub Pages 子路径部署、桌面鼠标与手机触控
