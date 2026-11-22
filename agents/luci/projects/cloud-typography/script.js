@@ -1,4 +1,4 @@
-/** Cloud Typography v2.2 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v2.3 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -27,6 +27,10 @@
   const radiusValue = document.getElementById('radius-value');
   const editTextButton = document.getElementById('edit-text');
   const editor = document.getElementById('text-editor');
+  const panelToggle = document.getElementById('panel-toggle');
+  const immersiveButton = document.getElementById('immersive-button');
+  const exitImmersive = document.getElementById('exit-immersive');
+  let panelCollapsed=false;
   const editorInput = document.getElementById('editor-input');
   const editorCount = document.getElementById('editor-count');
   const editorApply = document.getElementById('editor-apply');
@@ -73,6 +77,7 @@
   let chaosSpeed = +speedRange.value;
   let chaosClock=0, cameraZoom=1;
   // Record actual rendered simulation states, not a screen recording.
+  // Retain only the latest three minutes; creation can continue indefinitely.
   const MAX_TAKE=180000, SAMPLE=67;
   const frames=[];
   let mode='live', playhead=0, lastSample=-Infinity, playbackLast=0;
@@ -113,7 +118,7 @@
         const index = letters.length;
         letters.push({el,word,index,active:true,gone:false,x:0,y:0,
           biasX:(random(index*1.713)-.5)*2,biasY:(random(index*2.317)-.5)*2,
-          zSeed:(random(index*3.199)-.5)*2,
+          zSeed:(random(index*3.199)-.5)*2,framePose:[0,0,0,0,0,0],
           gustX:0,gustY:0,gustZ:0,gustVX:0,gustVY:0,pressDose:0});
         word.append(el);
       }
@@ -533,12 +538,13 @@
   function formatTime(ms){const sec=Math.floor(ms/1000);return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');}
   function syncTransport(){
     const duration=frames.length?frames[frames.length-1].t:0;
+    timeline.min=String(Math.round(frames.length?frames[0].t:0));
     timeline.max=String(Math.round(duration));
     timeline.value=String(Math.round(mode==='live'?duration:playhead));
     timeValue.textContent=formatTime(mode==='live'?duration:playhead)+' / '+formatTime(duration);
-    takeStatus.textContent=mode==='live'?'● 正在记录本轮':mode==='replay'?'▶ 正在回放':duration>=MAX_TAKE?'本轮已达 3 分钟上限':'Ⅱ 已暂停 · 可拖动时间轴';
+    takeStatus.textContent=mode==='live'?'● 记录最近3分钟':mode==='replay'?'▶ 正在回放':'Ⅱ 暂停 · 可拖动时间轴';
     playButton.textContent=mode==='live'||mode==='replay'?'Ⅱ 暂停':'▶ 播放';
-    liveButton.disabled=mode==='live'||duration>=MAX_TAKE;
+    liveButton.disabled=mode==='live';
     replayButton.disabled=frames.length<2;
     playButton.disabled=mode==='paused'&&frames.length<2;
     for(const el of [windRange,speedRange,radiusRange,densityRange,birdSizeRange,doveCalmButton,doveWindButton,gustButton,document.getElementById('zoom-in'),document.getElementById('zoom-out')])el.disabled=mode!=='live';
@@ -547,10 +553,13 @@
     const t=Math.max(0,simNow-start);
     if(!force&&t-lastSample<SAMPLE)return;
     lastSample=t;
-    frames.push({t,now:simNow,zoom:cameraZoom,transforms:letters.slice(0,activeCount).map(i=>i.el.style.transform),gone:Uint8Array.from(letters.slice(0,activeCount),i=>+i.gone),effects:Array.from(effects),stream:stream.slice(),
+    const poses=new Float32Array(activeCount*6);
+    for(let i=0;i<activeCount;i++)poses.set(letters[i].framePose,i*6);
+    frames.push({t,now:simNow,zoom:cameraZoom,poses,gone:Uint8Array.from(letters.slice(0,activeCount),i=>+i.gone),effects:Array.from(effects),stream:stream.slice(),
       birdTransform:messenger.style.transform,birdOpacity:messenger.style.opacity,
       pose:['--wing-angle','--far-wing-angle','--tail-angle','--head-angle','--envelope-angle','--bird-bob'].map(name=>document.documentElement.style.getPropertyValue(name)),
       controls:[windRange.value,speedRange.value,radiusRange.value,densityRange.value,birdSizeRange.value,doveDisperses?1:0]});
+    while(frames.length>1&&frames[0].t<t-MAX_TAKE)frames.shift();
     syncTransport();
   }
   function showFrame(frame,interactive=false){
@@ -562,7 +571,11 @@
     doveDisperses=Boolean(Number(frame.controls[5]));
     doveCalmButton.setAttribute('aria-pressed',String(!doveDisperses));
     doveWindButton.setAttribute('aria-pressed',String(doveDisperses));
-    for(let i=0;i<activeCount;i++){const el=letters[i].el;el.style.transform=frame.transforms[i]||'';el.classList.toggle('gone',!!frame.gone[i]);el.tabIndex=interactive&&!frame.gone[i]?0:-1;}
+    for(let i=0;i<activeCount;i++){
+      const el=letters[i].el,b=i*6,p=frame.poses;
+      el.style.transform=p&&p.length>=b+6?`translate3d(${p[b].toFixed(1)}px,${p[b+1].toFixed(1)}px,${p[b+2].toFixed(1)}px) rotateX(${p[b+3].toFixed(1)}deg) rotateY(${p[b+4].toFixed(1)}deg) rotateZ(${p[b+5].toFixed(1)}deg)`:'';
+      el.classList.toggle('gone',!!frame.gone[i]);el.tabIndex=interactive&&!frame.gone[i]?0:-1;
+    }
     messenger.style.transform=frame.birdTransform;messenger.style.opacity=frame.birdOpacity;
     const poseKeys=['--wing-angle','--far-wing-angle','--tail-angle','--head-angle','--envelope-angle','--bird-bob'];
     if(frame.pose)poseKeys.forEach((name,i)=>document.documentElement.style.setProperty(name,frame.pose[i]));
@@ -583,12 +596,12 @@
     if(mode==='live')freeze();
     if(frames.length<2)return;
     const end=frames[frames.length-1].t;
-    if(fromStart||playhead>=end-1)playhead=0;
+    if(fromStart||playhead>=end-1)playhead=frames[0].t;
     mode='replay';playbackLast=performance.now();showFrame(frameAt(playhead));syncTransport();
   }
   function readControls(){wind=+windRange.value;chaosSpeed=+speedRange.value;radiusSetting=+radiusRange.value;field.radius=radiusSetting;}
   function returnLive(){
-    if(mode==='live'||!frames.length||frames[frames.length-1].t>=MAX_TAKE)return;
+    if(mode==='live'||!frames.length)return;
     const tail=frames[frames.length-1];showFrame(tail,true);readControls();
     for(const item of letters){item.el.classList.toggle('gone',item.gone);item.el.tabIndex=item.active&&!item.gone?0:-1;}
     playhead=tail.t;mode='live';document.documentElement.classList.remove('take-paused');previousTick=performance.now();syncTransport();
@@ -640,12 +653,13 @@
           const ry=(item.zSeed*12*chaos+Math.cos(elapsed*.00019+k*.12)*3)*breeze;
           const px=dx+item.gustX,py=dy+item.gustY,pz=z+item.gustZ;
           const impulseAngle=clamp(item.gustVX*.022,-11,11);
+          item.framePose=[px,py,pz,rx,ry,rz+impulseAngle];
           item.el.style.transform=`translate3d(${px.toFixed(1)}px,${py.toFixed(1)}px,${pz.toFixed(1)}px) rotateX(${rx.toFixed(1)}deg) rotateY(${ry.toFixed(1)}deg) rotateZ(${(rz+impulseAngle).toFixed(1)}deg)`;
         }
       }
       if (effects.size || stream.length) particlesFrame(now);
       capture();
-      if(simNow-start>=MAX_TAKE)freeze();
+      // Rolling replay buffer; never stop the live artwork at three minutes.
     }
     requestAnimationFrame(animate);
   }
@@ -654,6 +668,21 @@
   radiusRange.addEventListener('input',()=>{radiusSetting=+radiusRange.value;field.radius=radiusSetting;radiusValue.textContent=String(radiusSetting);});
   densityRange.addEventListener('input',()=>{if(mode==='live')applyDensity(densityRange.value);});
   birdSizeRange.addEventListener('input',()=>{if(mode==='live')applyBirdSize(birdSizeRange.value);});
+  function setPanelCollapsed(value){
+    panelCollapsed=Boolean(value);sky.classList.toggle('panel-collapsed',panelCollapsed);
+    panelToggle.textContent=panelCollapsed?'⌄ 展开参数':'⌃ 收起参数';
+    panelToggle.setAttribute('aria-expanded',String(!panelCollapsed));
+    requestAnimationFrame(()=>fitDensity());
+  }
+  function setImmersive(value){
+    sky.classList.toggle('immersive',Boolean(value));
+    exitImmersive.tabIndex=value?0:-1;
+    requestAnimationFrame(()=>fitDensity());
+  }
+  panelToggle.addEventListener('click',()=>setPanelCollapsed(!panelCollapsed));
+  immersiveButton.addEventListener('click',()=>setImmersive(true));
+  exitImmersive.addEventListener('click',()=>setImmersive(false));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sky.classList.contains('immersive'))setImmersive(false);});
   const updateEditorCount=()=>{editorCount.textContent=graphemes(editorInput.value).length+' / 1200';};
   function closeEditor(){editor.hidden=true;editTextButton.focus();}
   editTextButton.addEventListener('click',()=>{if(mode!=='live')return;editorInput.value=currentText;editor.hidden=false;updateEditorCount();editorInput.focus();});
@@ -678,12 +707,13 @@
     press.active=false;press.id=null;field.strength=0;field.x=-1000;field.y=-1000;
     stream.length=0; lastEmission=0;
     if(messenger)messenger.style.opacity='0';
-    for(const item of letters){item.gone=false;item.el.classList.remove('gone');item.el.tabIndex=item.active?0:-1;item.el.style.transform='';item.gustX=item.gustY=item.gustZ=item.gustVX=item.gustVY=item.pressDose=0;}
+    for(const item of letters){item.gone=false;item.el.classList.remove('gone');item.el.tabIndex=item.active?0:-1;item.el.style.transform='';item.framePose=[0,0,0,0,0,0];item.gustX=item.gustY=item.gustZ=item.gustVX=item.gustVY=item.pressDose=0;}
     ctx.clearRect(0,0,vw,vh);applyZoom(cameraZoom);capture(true);if(status)status.textContent='新一轮开始，所有字母已恢复。';
   });
   window.addEventListener('resize',resize,{passive:true});
   reduced.addEventListener?.('change',()=>{field.strength=0;});
   document.addEventListener('visibilitychange',()=>{previousTick=performance.now();if(document.hidden){press.active=false;press.id=null;field.strength=0;stream.length=0;ctx.clearRect(0,0,vw,vh);if(messenger)messenger.style.opacity='0';}});
+  exitImmersive.tabIndex=-1;
   build(); applyDensity(densityRange.value,true);applyBirdSize(birdSizeRange.value);resize();start=simNow;
   windValue.textContent=String(wind);
   speedValue.textContent=chaosSpeed.toFixed(1)+'×';

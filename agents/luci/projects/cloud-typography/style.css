@@ -279,3 +279,19 @@ button, input { font: inherit; }
 #cloud-text .word-gap[hidden],#cloud-text .line-break[hidden]{display:none!important;}
 #cloud-text .line-break{display:block;height:0;width:100%;}
 @media(max-width:520px){.camera-controls #edit-text{font-size:10px;padding:6px 9px;margin-right:2px;}.editor-card{padding:18px;}.editor-actions{width:100%;}.editor-actions button{flex:1 1 auto;}}
+
+/* v2.3 glass controls; collapse and a full art viewing mode */
+.bottom-bar{padding-top:12px;border-top:1px solid rgba(255,255,255,.13);background:linear-gradient(0deg,rgba(57,133,175,.19),rgba(255,255,255,.055));backdrop-filter:blur(9px);}
+.studio-top{flex-wrap:wrap;}
+.studio-top .camera-controls{gap:5px;flex-wrap:wrap;justify-content:flex-end;}
+.camera-controls #panel-toggle,.camera-controls #immersive-button{font-size:10px;padding:7px 10px;}
+.sky.panel-collapsed .controls{display:none;}
+.sky.panel-collapsed .bottom-bar{gap:8px;}
+.sky.immersive{grid-template-rows:0px 1fr 0px;}
+.sky.immersive .masthead,.sky.immersive .bottom-bar{display:none;}
+.sky.immersive .composition{margin:auto;padding:15px 0;}
+#exit-immersive{position:fixed;right:clamp(13px,2vw,30px);top:clamp(12px,2vw,25px);z-index:9;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.43);padding:9px 13px;border-radius:999px;color:white;font-size:11px;cursor:pointer;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s;}
+.sky.immersive #exit-immersive{opacity:.68;visibility:visible;}
+.sky.immersive #exit-immersive:hover{opacity:1;}
+@media(max-width:850px){.bottom-bar{max-width:100%;}.studio-top{align-items:flex-start;}.studio-top .camera-controls{margin-left:auto;}}
+@media(max-width:520px){.bottom-bar{padding-top:9px;}.studio-top{gap:5px;}.studio-top .camera-controls{margin-left:0;width:100%;justify-content:space-between;}.camera-controls #panel-toggle,.camera-controls #immersive-button{padding:6px 7px;}.hint{font-size:9px;}}
