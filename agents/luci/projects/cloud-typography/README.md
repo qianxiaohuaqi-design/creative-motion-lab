@@ -2,15 +2,15 @@
 
 An interactive cloud-letter artwork built with HTML, CSS, and JavaScript. This folder is Luci's independent project. The other agent folders and the repository's shared configuration are not modified here.
 
-Live site: https://reina-motion-lab.netlify.app/
+Live site: https://qianxiaohuaqi-design.github.io/creative-motion-lab/
 
 ## Release
 
-**v2.4 — creator edition**, implemented on top of v2.1's articulated 2.5D bird, vapor wake and time-axis interaction.
+**v2.5 — repeat & GIF-quality edition**, implemented on top of v2.1's articulated 2.5D bird, vapor wake and time-axis interaction.
 
 ### Create
 - Click **编辑文字** to replace the prose (up to 1,200 graphemes). Supports Chinese, Latin text, punctuation and line breaks. Applying new text clears the former take.
-- **文字数量** repeats *only* the supplied copy to fill the scene, up to 300%. It does not invent extra words. For device stability, at most 1,500 glyphs are instantiated; high-density scenes use a lower recording sample rate.
+- **文本重复倍数** (1×–4×) duplicates the **entire user-provided text** in its original order. It does not inject words or truncate a repeated copy. To keep at most 1,500 live glyphs, long texts automatically have a lower maximum complete-copy multiplier (shown beside the slider). Old percentage-based presets/saved settings are migrated.
 - Chaos is **automatically progressive**; there is no chaos-intensity slider. **混乱速度** controls how quickly the progression occurs; 0 stops its progression.
 - A click dissolves one glyph; a press and drag summons the courier. **只送信** stirs the letters without dissolving them; **吹散云字** also allows local dissolution after sufficient exposure.
 - Empty-sky clicks have no destructive action. The explicit **吹散整段** button remains available.
@@ -25,7 +25,7 @@ Live site: https://reina-motion-lab.netlify.app/
 - Presets: **晨间微风**, **云中来信**, **漫天飞絮**. They begin a fresh take while keeping your text.
 - **保存设置 / 恢复设置** uses local browser storage. It is per browser/device; it is not cloud sync.
 - **保存画面**: PNG frame.
-- **导出 GIF**: up to 8 seconds, 10 fps, 640×360 landscape / 360×640 portrait, palette-indexed GIF89a.
+- **导出 GIF**: up to 8 seconds, 10 fps. Default **HD 960×540** landscape / **540×960** portrait; optional standard 640×360 / 360×640. A global median-cut palette sampled from the scene replaces RGB332, with reserved near-white lettering and light ordered dithering. GIF still has a hard 256-color limit; WebM is preferred for highest fidelity.
 - **导出视频**: up to 30 seconds, 20 fps, 960×540 landscape / 540×960 portrait. Uses MediaRecorder with supported WebM or MP4 mime types. The browser must support Canvas captureStream + MediaRecorder.
 - Exports are clean **canvas renderings** of the recorded scene, not pixel-perfect screenshots of DOM/CSS. They include glyphs, visual mist, articulated dove frames and main composition text but intentionally exclude all controls. Some perspective/font details may differ from the live scene. Video export processes at real-time speed.
 - Browser export errors are surfaced in the status area. It does not upload content to a server.
@@ -45,6 +45,8 @@ Open index.html in a modern Chromium, Firefox, or Safari browser. No build step,
 7. Replay the dove's wing pose and custom text, then resume from the most recent frame.
 8. Test PNG, GIF and video exports, inspect actual produced files in the target browser, and compare their layout to the live scene.
 9. Save settings, change presets, restore them and refresh the page. Confirm the stored snapshot can be restored manually.
+11. Type Chinese/English paragraphs, select 1×/2×/3×/4× and confirm each repeated block is intact and no default text was inserted. Repeat with very long input and confirm dynamic multiplier cap.
+12. Compare standard/HD GIF dimension, legibility and color gradients. Use WebM where GIF palette loss is unacceptable.
 10. Verify network/resource constraints and performance on a real phone, especially 300% text density.
 
 Automated API/logic simulations and syntax validation were run during development; **actual browser visual and media-codec acceptance remains outstanding**.
