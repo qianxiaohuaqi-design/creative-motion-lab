@@ -124,7 +124,7 @@
             el.role='button';el.tabIndex=0;
             el.setAttribute('aria-label','吹散字母 '+char);
             const index=letters.length;
-            letters.push({el,word,index,regionId:part.region.id,active:true,gone:false,x:0,y:0,
+            letters.push({el,word,index,regionId:part.region.id,motion:clamp(Number(part.region.motion)||1,.3,2),active:true,gone:false,x:0,y:0,
               biasX:(random(index*1.713)-.5)*2,biasY:(random(index*2.317)-.5)*2,
               zSeed:(random(index*3.199)-.5)*2,framePose:[0,0,0,0,0,0],
               gustX:0,gustY:0,gustZ:0,gustVX:0,gustVY:0,pressDose:0});
@@ -672,12 +672,13 @@
           const x=item.x*.012,y=item.y*.011,k=item.index;
           const sharedX = Math.sin(elapsed*.00026+x*.45+y*.18)*9 + Math.sin(elapsed*.00013+x*.33)*8;
           const sharedY = Math.cos(elapsed*.00024+y*.37+x*.18)*5;
-          const dx=(sharedX + Math.sin(elapsed*.00037+x+k*.12)*5 + (item.biasX*49+Math.sin(motionTime*.00014+k*.17)*21)*chaos)*breeze;
-          const dy=(sharedY + Math.sin(elapsed*.00033+y+k*.1)*5 + (item.biasY*42+Math.cos(motionTime*.00016+k*.19)*19)*chaos)*breeze;
-          const z=(item.zSeed*12 + Math.sin(elapsed*.00025+x*.41+k*.08)*9 + item.zSeed*55*chaos)*breeze;
-          const rz=(Math.sin(elapsed*.0002+k*.13)*1.3+item.biasX*28*chaos)*breeze;
-          const rx=(item.biasY*8*chaos+Math.sin(elapsed*.00024+k*.18)*2)*breeze;
-          const ry=(item.zSeed*12*chaos+Math.cos(elapsed*.00019+k*.12)*3)*breeze;
+          const regionMotion=item.motion||1;
+          const dx=(sharedX + Math.sin(elapsed*.00037+x+k*.12)*5 + (item.biasX*49+Math.sin(motionTime*.00014+k*.17)*21)*chaos)*breeze*regionMotion;
+          const dy=(sharedY + Math.sin(elapsed*.00033+y+k*.1)*5 + (item.biasY*42+Math.cos(motionTime*.00016+k*.19)*19)*chaos)*breeze*regionMotion;
+          const z=(item.zSeed*12 + Math.sin(elapsed*.00025+x*.41+k*.08)*9 + item.zSeed*55*chaos)*breeze*regionMotion;
+          const rz=(Math.sin(elapsed*.0002+k*.13)*1.3+item.biasX*28*chaos)*breeze*regionMotion;
+          const rx=(item.biasY*8*chaos+Math.sin(elapsed*.00024+k*.18)*2)*breeze*regionMotion;
+          const ry=(item.zSeed*12*chaos+Math.cos(elapsed*.00019+k*.12)*3)*breeze*regionMotion;
           const px=dx+item.gustX,py=dy+item.gustY,pz=z+item.gustZ;
           const impulseAngle=clamp(item.gustVX*.022,-11,11);
           item.framePose=[px,py,pz,rx,ry,rz+impulseAngle];
@@ -753,7 +754,7 @@
            typeof value.text!=='string'||!value.text.trim()||
            graphemes(value.text).length>1200||!value.element)return false;
         ids.add(value.id);
-        clean.push({id:value.id,text:value.text.trim(),element:value.element});
+        clean.push({id:value.id,text:value.text.trim(),element:value.element,motion:clamp(Number(value.motion)||1,.3,2)});
       }
       const total=clean.reduce((sum,r)=>sum+graphemes(r.text).filter(c=>!/\s/.test(c)).length,0);
       if(total>MAX_GLYPHS)return false;

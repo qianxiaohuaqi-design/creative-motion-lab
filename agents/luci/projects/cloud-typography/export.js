@@ -1,4 +1,4 @@
-/* Cloud Typography v2.6 — no external scripts.
+/* Cloud Typography v2.7 — no external scripts.
  * Canvas export omits editor and controls and reconstructs the art layer.
  * Browsers need MediaRecorder + canvas.captureStream for video export.
  */
@@ -99,17 +99,23 @@
     out.setTransform(1,0,0,1,0,0);out.globalAlpha=1;out.clearRect(0,0,w,h);drawSky(out,w,h);
     const scale=Math.min(w/vw,h/vh),ox=(w-vw*scale)/2,oy=(h-vh*scale)/2;
     out.save();out.translate(ox,oy);out.scale(scale,scale);
-    // Draw the deliberately selected journal-frame style, never its edit handles.
-    const region=document.getElementById('editable-region');
-    if(region&&region.dataset.style&&region.dataset.style!=='none'){
-      const r=region.getBoundingClientRect(),kindOfFrame=region.dataset.style;
-      out.save();
-      out.shadowBlur=0;out.lineWidth=1.2;out.strokeStyle='rgba(255,255,255,.53)';
-      if(typeof out.roundRect==='function'){
-        out.beginPath();out.roundRect(r.left,r.top,r.width,r.height,15);
-      }else{
-        out.beginPath();out.rect(r.left,r.top,r.width,r.height);
-      }
+    // Export all designed region outlines (editing handles stay hidden).
+    const regionFonts=new Map();
+    for(const entry of app.getRegions()){
+      const st=getComputedStyle(entry.element);
+      const size=(parseFloat(st.fontSize)||30)*frame.zoom;
+      regionFonts.set(entry.id,(st.fontWeight||'650')+' '+size+'px '+(st.fontFamily||'Arial'));
+    }
+    for(const region of document.querySelectorAll('.text-region')){
+      const kindOfFrame=region.dataset.style;
+      if(!kindOfFrame||kindOfFrame==='none')continue;
+      const r=region.getBoundingClientRect(),shape=region.dataset.shape;
+      out.save();out.shadowBlur=0;out.lineWidth=1.2;
+      out.strokeStyle='rgba(255,255,255,.53)';out.beginPath();
+      if((shape==='circle'||shape==='ellipse')&&out.ellipse){
+        out.ellipse(r.left+r.width/2,r.top+r.height/2,r.width/2,r.height/2,0,0,Math.PI*2);
+      }else if(out.roundRect)out.roundRect(r.left,r.top,r.width,r.height,15);
+      else out.rect(r.left,r.top,r.width,r.height);
       if(kindOfFrame==='glass'){
         out.fillStyle='rgba(245,253,255,.11)';out.fill();
       }else if(kindOfFrame==='dashed'&&out.setLineDash)out.setLineDash([7,5]);
@@ -127,7 +133,8 @@
       if(!item.active||item.el.classList.contains('gone'))continue;
       const rect=item.el.getBoundingClientRect();
       if(rect.right<0||rect.bottom<0||rect.left>vw||rect.top>vh)continue;
-      out.save();out.translate(rect.left+rect.width/2,rect.top+rect.height/2);
+      out.save();out.font=regionFonts.get(item.regionId)||out.font;
+      out.translate(rect.left+rect.width/2,rect.top+rect.height/2);
       // Reproduce the recorded Z rotation; DOM projection provides screen-space position.
       const ix=item.index*6;
       if(poses&&poses.length>=ix+6)out.rotate(poses[ix+5]*Math.PI/180);

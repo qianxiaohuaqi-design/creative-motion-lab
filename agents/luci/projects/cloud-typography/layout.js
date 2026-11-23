@@ -158,6 +158,8 @@
     const used=new Set();clean.forEach((z,i)=>{
       if(used.has(z.id))z.id='zone-'+(i+1);used.add(z.id);
     });
+    // Preserve the original h1 container even if an imported layout lacks zone-1.
+    if(!used.has('zone-1'))clean[0].id='zone-1';
     const newCaptions={};
     for(const key of ['top','bottom']){
       const v=dec[key]||d.decorations[key],fallback=d.decorations[key];
@@ -182,8 +184,18 @@
   buttons.remove.addEventListener('click',()=>{
     if(state.zones.length<2)return;
     const target=selected();
-    state.zones=state.zones.filter(z=>z.id!==target.id);
-    state.selected=state.zones[0].id;
+    if(target.id==='zone-1'){
+      // Keep the original semantic h1 and its DOM container as primary;
+      // promote the next frame when deleting the original primary module.
+      const survivor=state.zones.find(z=>z.id!=='zone-1');
+      const idx=state.zones.indexOf(survivor);
+      state.zones=state.zones.filter(z=>z.id!=='zone-1'&&z.id!==survivor.id);
+      state.zones.unshift({...survivor,id:'zone-1'});
+      state.selected='zone-1';
+    }else{
+      state.zones=state.zones.filter(z=>z.id!==target.id);
+      state.selected=state.zones[0].id;
+    }
     render(true);syncEngine();
   });
   pick.addEventListener('change',()=>{state.selected=pick.value;render(true);});
@@ -200,9 +212,11 @@
   });
   styleInput.addEventListener('change',()=>{selected().style=styleInput.value;render();});
   motionInput.addEventListener('input',()=>{
+    motionValue.textContent=num(motionInput.value,1).toFixed(1)+'×';
+  });
+  motionInput.addEventListener('change',()=>{
     const z=selected();z.motion=clamp(num(motionInput.value,1),.3,2);
     motionValue.textContent=z.motion.toFixed(1)+'×';
-    // Motion factors are read on the next take after rebuilding the glyph pool.
     syncEngine();
   });
   textarea.addEventListener('input',()=>{textCount.textContent=gr(textarea.value).length+' / 1200';});
