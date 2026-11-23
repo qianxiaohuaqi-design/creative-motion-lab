@@ -1,4 +1,4 @@
-/* Cloud Typography v2.5 — no external scripts.
+/* Cloud Typography v2.6 — no external scripts.
  * Canvas export omits editor and controls and reconstructs the art layer.
  * Browsers need MediaRecorder + canvas.captureStream for video export.
  */
@@ -124,8 +124,9 @@
     out.shadowBlur=0;
     // Preserve the editorial framing of the artwork, not its operation controls.
     for(const sel of ['.eyebrow','.subtitle']){
-      const el=document.querySelector(sel);if(!el)continue;
-      const rect=el.getBoundingClientRect(),s=getComputedStyle(el);
+      const el=document.querySelector(sel);if(!el||el.hidden)continue;
+      const s=getComputedStyle(el);if(s.display==='none'||s.visibility==='hidden')continue;
+      const rect=el.getBoundingClientRect();
       out.save();out.font=(s.fontWeight||'500')+' '+(parseFloat(s.fontSize)||12)*frame.zoom+'px '+(s.fontFamily||'Arial');
       out.fillStyle='rgba(255,255,255,.75)';out.shadowBlur=0;out.fillText(el.textContent,rect.left+rect.width/2,rect.top+rect.height/2);
       out.restore();

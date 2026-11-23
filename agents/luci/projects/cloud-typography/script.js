@@ -1,4 +1,4 @@
-/** Cloud Typography v2.5 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v2.6 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -152,19 +152,20 @@
     root.style.setProperty('--letter-area-width',(90+spread*7)+'vw');
     root.style.setProperty('--letter-area-max',(1080+spread*680)+'px');
     root.style.setProperty('--letter-text-max',(980+spread*710)+'px');
+    const region=document.getElementById('editable-region');
     const composition=paragraph.closest('.composition');
     const header=document.querySelector('.masthead'),footer=document.querySelector('.bottom-bar');
     let font=vw<=520?clamp(vw*.043,17,21):vw<=850?clamp(vw*.037,23,35):clamp(vw*.03,27,44);
-    paragraph.style.fontSize=font+'px';
-    if(composition&&header&&footer){
-      const room=Math.max(130,vh-header.offsetHeight-footer.offsetHeight-22);
-      for(let i=0;i<6&&composition.offsetHeight>room&&font>10;i++){
-        font=Math.max(10,font*.88);
-        paragraph.style.fontSize=font.toFixed(2)+'px';
-      }
+    for(let i=0;i<12;i++){
+      paragraph.style.fontSize=font.toFixed(2)+'px';
+      const overflow=region?
+        paragraph.scrollHeight>Math.max(50,region.clientHeight-20)||
+        paragraph.scrollWidth>Math.max(65,region.clientWidth-20):
+        !!(composition&&header&&footer&&composition.offsetHeight>Math.max(130,vh-header.offsetHeight-footer.offsetHeight-22));
+      if(!overflow||font<=10)break;
+      font=Math.max(10,font*.85);
     }
-    cachedFitWidth=vw;cachedFitHeight=vh;
-    measure();
+    cachedFitWidth=vw;cachedFitHeight=vh;measure();
   }
   function applyDensity(value,force=false){
     const proposed=Number(value);
@@ -308,6 +309,7 @@
     }
   },true);
   paragraph.addEventListener('click', e=>{
+    if(sky.classList.contains('layout-editing'))return;
     const node=e.target.closest?.('.letter');
     if (!node) return;
     const item=letters[+node.dataset.index]; dissolve(item);
@@ -315,6 +317,7 @@
     e.stopPropagation();
   });
   paragraph.addEventListener('keydown', e=>{
+    if(sky.classList.contains('layout-editing'))return;
     if (!['Enter',' '].includes(e.key)) return;
     const node=e.target.closest?.('.letter');
     if (!node) return;
@@ -340,7 +343,7 @@
   // -------- Press and hold to create a local, directional wind field --------
   // Mouse drag steers the gust. Staying in one place produces a rightward breeze.
   function handlePointerDown(e) {
-    if (mode!=='live' || press.active || !e.isPrimary || (e.pointerType==='mouse' && e.button!==0)) return;
+    if (sky.classList.contains('layout-editing')||mode!=='live' || press.active || !e.isPrimary || (e.pointerType==='mouse' && e.button!==0)) return;
     if(e.target.closest?.('.bottom-bar,.masthead,button,input,label')) return;
     press.active=true; press.id=e.pointerId;
     press.downX=press.lastX=press.x=e.clientX;
@@ -636,7 +639,7 @@
   document.getElementById('zoom-in').addEventListener('click',()=>{if(mode==='live')applyZoom(cameraZoom+.1);});
   document.getElementById('zoom-out').addEventListener('click',()=>{if(mode==='live')applyZoom(cameraZoom-.1);});
   sky.addEventListener('wheel',ev=>{
-    if(ev.target.closest?.('.bottom-bar,.masthead')||ev.ctrlKey||mode!=='live')return;
+    if(sky.classList.contains('layout-editing')||ev.target.closest?.('.bottom-bar,.masthead')||ev.ctrlKey||mode!=='live')return;
     ev.preventDefault();const dy=ev.deltaY*(ev.deltaMode===1?16:ev.deltaMode===2?vh:1);
     applyZoom(cameraZoom*Math.exp(-clamp(dy,-350,350)*.0014));
   },{passive:false});
@@ -649,7 +652,7 @@
       if(playhead>=frames[frames.length-1].t)mode='paused';
       syncTransport();
     }
-    if(mode==='live'&&!document.hidden) {
+    if(mode==='live'&&!document.hidden&&!sky.classList.contains('layout-editing')) {
       simNow+=dt;const now=simNow;
       chaosClock+=dt*chaosSpeed;
       updateLocalWind(now,dt);
@@ -739,6 +742,8 @@
   // Scene controls for the companion export module.
   window.CloudMotionLab={
     getFrames:()=>frames,
+    reflowLayout:()=>fitDensity(),
+    resetArtwork:()=>resetButton.click(),
     getScene:()=>({sky,letters,canvas,messenger,paragraph,currentText,original}),
     getState:()=>({mode,playhead}),
     freeze:()=>freeze(),

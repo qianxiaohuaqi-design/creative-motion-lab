@@ -50,3 +50,11 @@ Open index.html in a modern Chromium, Firefox, or Safari browser. No build step,
 10. Verify network/resource constraints and performance on a real phone, especially 300% text density.
 
 Automated API/logic simulations and syntax validation were run during development; **actual browser visual and media-codec acceptance remains outstanding**.
+
+## v2.6 · 自由排版（第一阶段）
+
+- 「排版模式」提供一个真实的矩形文字区域：拖动框体移动、右下角调整大小，或在空白画布拖出新范围。支持一键铺满和恢复居中。
+- 上方标题、下方短句可分别隐藏与拖动，顶部品牌栏可隐藏；三个样式为无框、虚线、玻璃便签。
+- 排版编辑与云字动力学互斥，结束排版重新开启本轮，避免旧时间轴与新几何不匹配。
+- 原有自定义文案、1×–4×、白鸽、录像、GIF/PNG 导出依然工作；布局保存在浏览器设置中，老配置采用默认布局。
+- 此阶段**仅支持一个可移动矩形文字框**；多框、圆形、自由手绘轮廓将另外开发，尚未实现。
