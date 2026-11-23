@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#85c5e5">
   <meta name="description" content="Cloud Typography — a letter from the sky, drifting into cloud and wind.">
   <title>Cloud Typography · 云中来信</title>
-  <link rel="stylesheet" href="./style.css?v=2.6">
-  <script src="./script.js?v=2.6" defer></script>
-  <script src="./export.js?v=2.6" defer></script>
-  <script src="./layout.js?v=2.6" defer></script>
+  <link rel="stylesheet" href="./style.css?v=2.7">
+  <script src="./script.js?v=2.7" defer></script>
+  <script src="./export.js?v=2.7" defer></script>
+  <script src="./layout.js?v=2.7" defer></script>
 </head>
 <body>
   <main class="sky" id="sky">
@@ -105,16 +105,27 @@
         <div class="camera-controls"><button id="layout-toggle" type="button" aria-pressed="false" aria-controls="layout-toolbar">▧ 排版模式</button><button id="edit-text" type="button">✎ 编辑文字</button><button id="panel-toggle" type="button" aria-expanded="true" aria-controls="parameter-panel">⌃ 收起参数</button><button id="immersive-button" type="button" title="沉浸欣赏（Esc 退出）">⛶ 沉浸</button><button id="zoom-out" type="button" aria-label="拉远镜头">−</button><output id="zoom-value">100%</output><button id="zoom-in" type="button" aria-label="拉近镜头">+</button></div>
       </div>
       <div class="layout-toolbar" id="layout-toolbar" hidden>
-          <div class="layout-hint">拖文字框移动、拖右下角改变大小，也可以在空白处拖出新范围</div>
+          <div class="layout-hint">多文字框排版：选择模块后编辑，拖动移动，拖右下角缩放；空白处拖动可新建框</div>
           <div class="layout-tools">
-            <button id="layout-full" type="button">铺满画布</button>
+            <button id="layout-add" type="button">＋ 新建文字框</button>
+            <button id="layout-delete" type="button">删除选中框</button>
+            <label>选择模块 <select id="layout-zone-select" aria-label="选择要编辑的文字框"><option value="zone-1">文字框 1</option></select></label>
+            <label>区域形状 <select id="layout-shape"><option value="rect">矩形</option><option value="circle">圆形</option><option value="ellipse">椭圆形</option></select></label>
+            <button id="layout-full" type="button">铺满选中框</button>
             <button id="layout-center" type="button">恢复居中</button>
             <label>边框样式 <select id="layout-style"><option value="none">无边框</option><option value="dashed">虚线手帐</option><option value="glass">半透明便签</option></select></label>
             <label><input id="layout-show-top" type="checkbox" checked> 上方标题</label>
             <label><input id="layout-show-bottom" type="checkbox" checked> 下方短句</label>
             <label><input id="layout-show-brand" type="checkbox" checked> 顶部品牌栏</label>
           </div>
-          <span id="layout-status" role="status" aria-live="polite">第一个自由矩形框 · 多框和手绘形状在下一阶段</span>
+          <div class="layout-editor">
+            <label for="layout-zone-text">当前模块文字 <span id="layout-text-count">0 / 1200</span></label>
+            <textarea id="layout-zone-text" rows="2" maxlength="1200" spellcheck="false" placeholder="给这个模块单独输入文字"></textarea>
+            <button id="layout-apply-text" type="button">应用到当前框</button>
+            <label for="layout-motion">漂移幅度 <output id="layout-motion-value">1.0×</output></label>
+            <input id="layout-motion" type="range" min="0.3" max="2" step="0.1" value="1">
+          </div>
+          <span id="layout-status" role="status" aria-live="polite">可新增多个模块，并分别设置文案、形状和漂移强度</span>
         </div>
         <div class="controls" id="parameter-panel">
         <div class="parameter"><label for="wind-range" title="白鸽带起的风力与云絮飘散速度">鸽翼风速 <output id="wind-value">4</output></label><input id="wind-range" type="range" min="0" max="20" step="1" value="4"></div>

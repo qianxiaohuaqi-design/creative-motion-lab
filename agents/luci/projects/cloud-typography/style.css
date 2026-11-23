@@ -353,3 +353,53 @@ button, input { font: inherit; }
 .sky.layout-hide-brand{grid-template-rows:0 minmax(280px,1fr) auto;}
 .sky.layout-hide-brand .masthead{display:none!important;}
 @media(max-width:520px){.composition,.sky.immersive .composition{width:100%;min-height:290px;padding:0;}.text-plane{transform:scale(var(--camera-zoom));}#editable-region{padding:5px;}.layout-toolbar{padding:7px 0;}.layout-tools{gap:6px;}.layout-tools label,.layout-hint{font-size:10px;}}
+
+/* v2.7 — multi-frame creation surface, independent text and oval shapes. */
+.text-region{position:absolute;box-sizing:border-box;min-width:12%;min-height:12%;
+  padding:8px 12px;overflow:visible;border:1px solid transparent;border-radius:16px;}
+.text-region .zone-text{position:relative;display:block;width:100%;margin:0;
+  line-height:1.52;text-align:center;max-width:none;text-wrap:pretty;}
+.text-region .zone-text .word[hidden],.text-region .zone-text .word-gap[hidden],
+.text-region .zone-text .line-break[hidden]{display:none!important;}
+.text-region .zone-text .line-break{display:block;height:0;width:100%;}
+.text-region[data-style="dashed"]{border:1px dashed rgba(255,255,255,.58);}
+.text-region[data-style="glass"]{border:1px solid rgba(255,255,255,.51);
+  background:rgba(246,253,255,.1);backdrop-filter:blur(2px);}
+.text-region[data-shape="circle"],.text-region[data-shape="ellipse"]{border-radius:50%;}
+.text-region[data-shape="circle"] .zone-text,.text-region[data-shape="ellipse"] .zone-text{
+  position:absolute;left:14%;top:50%;width:72%;
+  transform:translateY(-50%);max-height:75%;}
+.text-region[data-shape="circle"][data-style="none"],
+.text-region[data-shape="ellipse"][data-style="none"]{border-color:transparent;}
+.sky.layout-editing .text-region{border:1.5px dashed rgba(255,255,255,.80)!important;
+  background:rgba(250,253,255,.065)!important;cursor:move;touch-action:none;}
+.sky.layout-editing .text-region.selected{outline:2px solid rgba(255,255,255,.90);
+  outline-offset:3px;background:rgba(250,253,255,.13)!important;}
+.sky.layout-editing .text-region[data-shape="circle"],
+.sky.layout-editing .text-region[data-shape="ellipse"]{border-radius:50%;}
+.text-region .region-grip{display:none;}
+.sky.layout-editing .text-region .region-grip{display:block;position:absolute;bottom:-8px;
+  right:-8px;width:19px;height:19px;border:2px solid white;border-radius:6px;
+  background:#6db3d6;cursor:nwse-resize;touch-action:none;}
+.sky.layout-editing .text-region .zone-text{pointer-events:none;}
+.text-region .region-label{display:none;}
+.sky.layout-editing .text-region .region-label{display:block;position:absolute;top:-23px;
+  left:0;color:white;font-size:11px;font-weight:600;white-space:nowrap;pointer-events:none;}
+.sky.layout-editing #editable-region::before{display:none!important;}
+.layout-editor{display:flex;align-items:center;gap:9px;flex-wrap:wrap;width:100%;
+  padding:8px;border:1px solid rgba(255,255,255,.17);border-radius:13px;
+  background:rgba(255,255,255,.05);}
+.layout-editor label{font-size:11px;display:flex;gap:7px;align-items:center;white-space:nowrap;}
+.layout-editor textarea{flex:1 1 220px;min-width:160px;max-width:570px;height:58px;
+  resize:vertical;padding:8px 12px;border:1px solid rgba(255,255,255,.45);
+  border-radius:9px;background:rgba(246,251,255,.93);color:#315f7d;
+  font-size:12px;line-height:1.55;touch-action:auto;user-select:text;}
+.layout-editor #layout-motion{width:95px;accent-color:white;touch-action:pan-x;}
+#layout-text-count{opacity:.72;}
+#layout-zone-select{max-width:150px;}
+@media(max-width:520px){
+  .text-region{padding:4px 6px;}
+  .layout-editor{padding:6px;gap:6px;}
+  .layout-editor textarea{flex-basis:100%;max-width:none;}
+  .layout-tools label{max-width:100%;}
+}
