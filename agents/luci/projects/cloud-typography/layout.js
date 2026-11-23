@@ -55,7 +55,15 @@
       style:['none','dashed','glass'].includes(value?.style)?value.style:'none',
       motion:clamp(num(value?.motion,1),.3,2),text};
   }
+  function reconcilePrimaryText(){
+    const live=app.getRegions();
+    for(const zone of state.zones){
+      const match=live.find(r=>r.id===zone.id);
+      if(match&&match.text&&match.text!==zone.text)zone.text=match.text;
+    }
+  }
   function snapshot(){
+    reconcilePrimaryText();
     return {zones:state.zones.map(z=>({...z})),selected:state.selected,
       decorations:{top:{...state.decorations.top},bottom:{...state.decorations.bottom},
         brand:state.decorations.brand}};
@@ -173,6 +181,7 @@
     render(true);syncEngine();
   }
   function edit(on){
+    if(on)reconcilePrimaryText();
     editing=Boolean(on);drag=null;draft.hidden=true;
     app.resetArtwork();sky.classList.toggle('layout-editing',editing);
     toolbar.hidden=!editing;toggle.setAttribute('aria-pressed',String(editing));

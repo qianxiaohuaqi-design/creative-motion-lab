@@ -6,7 +6,7 @@ Live site: https://qianxiaohuaqi-design.github.io/creative-motion-lab/
 
 ## Release
 
-**v2.5 — repeat & GIF-quality edition**, implemented on top of v2.1's articulated 2.5D bird, vapor wake and time-axis interaction.
+**v2.7 — multi-region journal creator**, implemented on top of v2.1's articulated 2.5D bird, vapor wake and time-axis interaction.
 
 ### Create
 - Click **编辑文字** to replace the prose (up to 1,200 graphemes). Supports Chinese, Latin text, punctuation and line breaks. Applying new text clears the former take.
@@ -32,7 +32,7 @@ Live site: https://qianxiaohuaqi-design.github.io/creative-motion-lab/
 
 ## Development
 
-Open index.html in a modern Chromium, Firefox, or Safari browser. No build step, external runtime, or CDN dependency. The page loads script.js and export.js.
+Open index.html in a modern Chromium, Firefox, or Safari browser. No build step, external runtime, or CDN dependency. The page loads script.js, export.js, and layout.js.
 
 ## QA checklist
 
@@ -68,3 +68,12 @@ Automated API/logic simulations and syntax validation were run during developmen
 - 每次增删模块或更改文案，会开启新一轮时间轴记录。拖动和缩放后需要退出排版模式才继续动画。
 - 浏览器本地保存/恢复包含各模块的文案、位置、形状、风格、漂移幅度及装饰文字状态。兼容 v2.6 单模块布局配置。
 - 圆形/椭圆形文本采用安全的内部排版宽度，不裁剪成任意手绘路径。自由手绘轮廓、图层高级编辑仍属后续增强。
+
+### v2.7 验收建议
+1. 进入排版模式，添加 2～6 个文字框，分别输入不同中英文句子；切换框后保持各自文字。
+2. 测试拖动、缩放、圆形和椭圆形、修改边框样式与漂移幅度。
+3. 删除非主框及第一个主框，确认其他模块不会消失或遗留旧字符。
+4. 用常规「编辑文字」按钮更新第一框，然后进入排版模式并保存、恢复，确保新文字不会被旧布局覆盖。
+5. 测试 1×～4×、白鸽吹散、回放与 GIF/PNG/视频，确认多个框都出现在导出画面中。
+6. 超长文本超出 1500 字形总量时应提示并拒绝该次变更。
+7. 多框已加入，任意手绘形状、独立颜色和高级图层仍未提供。
