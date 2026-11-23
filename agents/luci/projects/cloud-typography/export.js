@@ -99,6 +99,22 @@
     out.setTransform(1,0,0,1,0,0);out.globalAlpha=1;out.clearRect(0,0,w,h);drawSky(out,w,h);
     const scale=Math.min(w/vw,h/vh),ox=(w-vw*scale)/2,oy=(h-vh*scale)/2;
     out.save();out.translate(ox,oy);out.scale(scale,scale);
+    // Draw the deliberately selected journal-frame style, never its edit handles.
+    const region=document.getElementById('editable-region');
+    if(region&&region.dataset.style&&region.dataset.style!=='none'){
+      const r=region.getBoundingClientRect(),kindOfFrame=region.dataset.style;
+      out.save();
+      out.shadowBlur=0;out.lineWidth=1.2;out.strokeStyle='rgba(255,255,255,.53)';
+      if(typeof out.roundRect==='function'){
+        out.beginPath();out.roundRect(r.left,r.top,r.width,r.height,15);
+      }else{
+        out.beginPath();out.rect(r.left,r.top,r.width,r.height);
+      }
+      if(kindOfFrame==='glass'){
+        out.fillStyle='rgba(245,253,255,.11)';out.fill();
+      }else if(kindOfFrame==='dashed'&&out.setLineDash)out.setLineDash([7,5]);
+      out.stroke();out.restore();
+    }
     const style=getComputedStyle(scene.paragraph),fontSize=parseFloat(style.fontSize)||30;
     out.textAlign='center';out.textBaseline='middle';
     out.font=(style.fontWeight||'650')+' '+(fontSize*frame.zoom)+'px '+(style.fontFamily||'Arial');
