@@ -28,6 +28,6 @@ for page in "$DEST/index.html" "$DEST/luci/index.html" "$DEST/gemini/index.html"
       echo "Missing referenced asset: $page -> $asset" >&2
       exit 1
     }
-  done < <(grep -oE '(src|href)="\\./[^"]+\\.(css|js)(\\?[^"]*)?"' "$page" | sed -E 's/^(src|href)="\\.\\/([^"?]+).*$/\\2/')
+  done < <(grep -oE '(src|href)="\./[^"]+\.(css|js)(\?[^"]*)?"' "$page" | sed -E 's/^(src|href)="\.\/([^"?]+).*$/\2/')
 done
 echo "Static site dist ready: Luci (including layout.js), Gemini, DeepSeek."
