@@ -1,4 +1,4 @@
-/** Cloud Typography v2.6 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v2.7 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -50,7 +50,8 @@
   let currentText=original;
   const letters = [];
   const words = [];
-  let baseWords=[],wordPool=[];
+  let baseWords=[],wordPool=[],wordsPerCopy=0;
+  let regions=[{id:'zone-1',text:currentText,element:paragraph}];
   const segmenter=typeof Intl.Segmenter==='function'?new Intl.Segmenter('zh',{granularity:'grapheme'}):null;
   const graphemes=text=>segmenter?Array.from(segmenter.segment(text),s=>s.segment):Array.from(text);
   function parseWords(text){
@@ -99,71 +100,71 @@
   function build() {
     letters.length=0;words.length=0;visibleWords=-1;activeCount=0;
     baseWords=parseWords(currentText);
-    // Repeat FULL copies of the author's text. Never cut off a copy to fit a slider value.
-    // The range shrinks for very long texts instead of silently truncating the content.
-    const perCopy=baseWords.reduce((n,token)=>n+graphemes(token.value).length,0);
-    maxCopies=clamp(Math.floor(MAX_GLYPHS/Math.max(1,perCopy)),1,MAX_COPIES);
-    densityRange.max=String(maxCopies);
-    wordPool=[];
+    // Copy-major ordering preserves contiguous-prefix pose snapshots.
+    const parts=regions.map(region=>({
+      region,tokens:parseWords(region.text),
+      glyphs:graphemes(region.text).filter(c=>!/\s/.test(c)).length
+    }));
+    const glyphsPerCopy=parts.reduce((sum,p)=>sum+p.glyphs,0);
+    if(glyphsPerCopy>MAX_GLYPHS)throw Error('文字框总字形数超过 1500');
+    wordsPerCopy=parts.reduce((sum,p)=>sum+p.tokens.length,0);
+    maxCopies=clamp(Math.floor(MAX_GLYPHS/Math.max(1,glyphsPerCopy)),1,MAX_COPIES);
+    densityRange.max=String(maxCopies);wordPool=[];
+    for(const part of parts)part.region.element.textContent='';
     for(let copy=0;copy<maxCopies;copy++){
-      for(let i=0;i<baseWords.length;i++){
-        const token=baseWords[i];
-        const lastInCopy=i===baseWords.length-1;
-        // A visual separator at copy boundaries; original punctuation and newlines remain intact.
-        const sep=lastInCopy&&copy<maxCopies-1&&!token.sep?' ':token.sep;
-        wordPool.push({value:token.value,sep});
+      for(const part of parts){
+        const container=part.region.element;
+        for(let wi=0;wi<part.tokens.length;wi++){
+          const token=part.tokens[wi];wordPool.push(token);
+          const word=document.createElement('span');word.className='word';
+          const first=letters.length;
+          for(const char of graphemes(token.value)){
+            const el=document.createElement('span');el.className='letter';
+            el.textContent=char;el.dataset.char=char;el.dataset.index=String(letters.length);
+            el.role='button';el.tabIndex=0;
+            el.setAttribute('aria-label','吹散字母 '+char);
+            const index=letters.length;
+            letters.push({el,word,index,regionId:part.region.id,active:true,gone:false,x:0,y:0,
+              biasX:(random(index*1.713)-.5)*2,biasY:(random(index*2.317)-.5)*2,
+              zSeed:(random(index*3.199)-.5)*2,framePose:[0,0,0,0,0,0],
+              gustX:0,gustY:0,gustZ:0,gustVX:0,gustVY:0,pressDose:0});
+            word.append(el);
+          }
+          container.append(word);
+          const last=wi===part.tokens.length-1;
+          const sep=last&&copy<maxCopies-1&&!token.sep?' ':token.sep;
+          const space=document.createElement('span');
+          space.textContent=sep==='\n'?'':sep;
+          space.className=sep==='\n'?'line-break':'word-gap';
+          container.append(space);
+          words.push({word,space,first,end:letters.length});
+        }
       }
     }
-    paragraph.textContent='';
-    wordPool.forEach((token,wi,all)=>{
-      const wordText=token.value;
-      const word = document.createElement('span');
-      word.className = 'word';
-      const first=letters.length;
-      for (const char of graphemes(wordText)) {
-        const el = document.createElement('span');
-        el.className = 'letter';
-        el.textContent = char;
-        el.dataset.char = char;
-        el.dataset.index = String(letters.length);
-        el.role = 'button';
-        el.tabIndex = 0;
-        el.setAttribute('aria-label', `吹散字母 ${char}`);
-        const index = letters.length;
-        letters.push({el,word,index,active:true,gone:false,x:0,y:0,
-          biasX:(random(index*1.713)-.5)*2,biasY:(random(index*2.317)-.5)*2,
-          zSeed:(random(index*3.199)-.5)*2,framePose:[0,0,0,0,0,0],
-          gustX:0,gustY:0,gustZ:0,gustVX:0,gustVY:0,pressDose:0});
-        word.append(el);
-      }
-      paragraph.append(word);
-      const space=document.createElement('span');
-      space.textContent=token.sep==='\n'?'':token.sep;
-      space.className=token.sep==='\n'?'line-break':'word-gap';
-      paragraph.append(space);
-      words.push({word,space,first,end:letters.length});
-    });
   }
   // Keep a stable indexed letter pool so density changes don't destroy dissolution history.
   // Use full words to avoid truncating glyph clusters or leaving broken word endings.
   function fitDensity(){
-    const root=document.documentElement;
-    const spread=clamp((density-1)/3,0,1);
+    const root=document.documentElement,spread=clamp((density-1)/3,0,1);
     root.style.setProperty('--letter-area-width',(90+spread*7)+'vw');
     root.style.setProperty('--letter-area-max',(1080+spread*680)+'px');
     root.style.setProperty('--letter-text-max',(980+spread*710)+'px');
-    const region=document.getElementById('editable-region');
-    const composition=paragraph.closest('.composition');
-    const header=document.querySelector('.masthead'),footer=document.querySelector('.bottom-bar');
-    let font=vw<=520?clamp(vw*.043,17,21):vw<=850?clamp(vw*.037,23,35):clamp(vw*.03,27,44);
-    for(let i=0;i<12;i++){
-      paragraph.style.fontSize=font.toFixed(2)+'px';
-      const overflow=region?
-        paragraph.scrollHeight>Math.max(50,region.clientHeight-20)||
-        paragraph.scrollWidth>Math.max(65,region.clientWidth-20):
-        !!(composition&&header&&footer&&composition.offsetHeight>Math.max(130,vh-header.offsetHeight-footer.offsetHeight-22));
-      if(!overflow||font<=10)break;
-      font=Math.max(10,font*.85);
+    const starting=vw<=520?clamp(vw*.043,17,21):vw<=850?clamp(vw*.037,23,35):clamp(vw*.03,27,44);
+    for(const entry of regions){
+      const body=entry.element;
+      const frame=body.closest('.text-region')||document.getElementById('editable-region');
+      let font=starting;
+      if(frame){
+        const oval=frame.dataset.shape==='circle'||frame.dataset.shape==='ellipse';
+        const usableW=Math.max(42,frame.clientWidth*(oval?.72:1)-28);
+        const usableH=Math.max(40,frame.clientHeight*(oval?.72:1)-28);
+        for(let i=0;i<15;i++){
+          body.style.fontSize=font.toFixed(2)+'px';
+          if((body.scrollHeight<=usableH&&body.scrollWidth<=usableW)||font<=9)break;
+          font=Math.max(9,font*.85);
+        }
+      }
+      body.style.fontSize=font.toFixed(2)+'px';
     }
     cachedFitWidth=vw;cachedFitHeight=vh;measure();
   }
@@ -173,7 +174,7 @@
     densityRange.max=String(maxCopies);
     densityRange.value=String(density);
     densityRange.setAttribute('aria-valuetext',density+'份完整原文');
-    const count=baseWords.length*density;
+    const count=wordsPerCopy*density;
     if(force||count!==visibleWords){
       visibleWords=count;
       activeCount=words[count-1].end;
@@ -190,7 +191,7 @@
     densityValue.textContent=density+'×';
     densityNote.textContent=maxCopies<MAX_COPIES?
       '文字较长 · 最多完整重复 '+maxCopies+'×':
-      '整段重复 · '+activeCount+' 个字形';
+      '所有文字框各重复 '+density+'× · '+activeCount+' 个字形';
   }
   function applyBirdSize(value){
     birdSize=clamp(Number(value),30,180);
@@ -308,7 +309,7 @@
       e.preventDefault();e.stopImmediatePropagation();
     }
   },true);
-  paragraph.addEventListener('click', e=>{
+  paragraph.closest('.text-plane').addEventListener('click', e=>{
     if(sky.classList.contains('layout-editing'))return;
     const node=e.target.closest?.('.letter');
     if (!node) return;
@@ -316,7 +317,7 @@
     if (status && performance.now()-lastAnnouncement>850) { status.textContent=`字母 ${node.textContent} 随风散去。`;lastAnnouncement=performance.now(); }
     e.stopPropagation();
   });
-  paragraph.addEventListener('keydown', e=>{
+  paragraph.closest('.text-plane').addEventListener('keydown', e=>{
     if(sky.classList.contains('layout-editing'))return;
     if (!['Enter',' '].includes(e.key)) return;
     const node=e.target.closest?.('.letter');
@@ -724,6 +725,7 @@
     if(!next||graphemes(next).length>1200){editorInput.focus();return;}
     closeEditor();if(next===currentText)return;
     currentText=next;effects.clear();stream.length=0;
+    regions[0].text=currentText;
     build();applyDensity(densityRange.value,true);
     resetButton.click();
     if(status)status.textContent='已更新天空文案，新一轮创作开始。';
@@ -742,6 +744,23 @@
   // Scene controls for the companion export module.
   window.CloudMotionLab={
     getFrames:()=>frames,
+    getRegions:()=>regions.map(r=>({id:r.id,text:r.text,element:r.element})),
+    setRegions:next=>{
+      if(!Array.isArray(next)||next.length<1||next.length>6)return false;
+      const ids=new Set(),clean=[];
+      for(const value of next){
+        if(!value||typeof value.id!=='string'||!value.id||ids.has(value.id)||
+           typeof value.text!=='string'||!value.text.trim()||
+           graphemes(value.text).length>1200||!value.element)return false;
+        ids.add(value.id);
+        clean.push({id:value.id,text:value.text.trim(),element:value.element});
+      }
+      const total=clean.reduce((sum,r)=>sum+graphemes(r.text).filter(c=>!/\s/.test(c)).length,0);
+      if(total>MAX_GLYPHS)return false;
+      regions=clean;currentText=regions[0].text;
+      build();applyDensity(densityRange.value,true);resetButton.click();
+      return true;
+    },
     reflowLayout:()=>fitDensity(),
     resetArtwork:()=>resetButton.click(),
     getScene:()=>({sky,letters,canvas,messenger,paragraph,currentText,original}),
@@ -756,6 +775,7 @@
     applyConfig:cfg=>{
       if(!cfg||typeof cfg!=='object')return false;
       currentText=typeof cfg.text==='string'&&cfg.text.trim()&&graphemes(cfg.text.trim()).length<=1200?cfg.text.trim():currentText;
+      regions[0].text=currentText;
       effects.clear();stream.length=0;build();
       // Migrate v2.4 saved percent values (100–300%) to whole-copy multipliers.
       const loadedDensity=Number(cfg.density);
