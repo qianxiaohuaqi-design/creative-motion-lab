@@ -157,8 +157,11 @@
       const frame=body.closest('.text-region')||document.getElementById('editable-region');
       if(!frame)continue;
       const oval=frame.dataset.shape==='circle'||frame.dataset.shape==='ellipse';
-      const roomW=Math.max(48,frame.clientWidth*(oval?.72:1)-20);
-      const roomH=Math.max(48,frame.clientHeight*(oval?.74:1)-18);
+      // scrollWidth is never smaller than the text element's own width.
+      // For ovals, measuring against 72% of frame width *minus padding* falsely
+      // reported overflow for every font size, forcing the old tiny 9px letters.
+      const roomW=Math.max(48,body.clientWidth||frame.clientWidth-16);
+      const roomH=Math.max(44,oval?frame.clientHeight*.74:frame.clientHeight-16);
       const fits=size=>{
         body.style.fontSize=size.toFixed(2)+'px';
         return body.scrollHeight<=roomH+2&&body.scrollWidth<=roomW+2;
