@@ -1,4 +1,4 @@
-/** Cloud Typography v2.7 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
+/** Cloud Typography v2.8 — lucid sky, subtle depth, cursor-driven wind and permanent dispersal.
  * Each letter owns a 3-D transform. DOM controls remain independent of Canvas fog.
  */
 (() => {
@@ -149,22 +149,37 @@
     root.style.setProperty('--letter-area-width',(90+spread*7)+'vw');
     root.style.setProperty('--letter-area-max',(1080+spread*680)+'px');
     root.style.setProperty('--letter-text-max',(980+spread*710)+'px');
-    const starting=vw<=520?clamp(vw*.043,17,21):vw<=850?clamp(vw*.037,23,35):clamp(vw*.03,27,44);
+    // Manual font size takes priority, including when text overflows its frame.
+    // Auto chooses the largest readable size rather than shrinking to 9px.
+    const upper=vw<=520?38:vw<=850?46:60,lower=vw<=520?12:14;
     for(const entry of regions){
       const body=entry.element;
       const frame=body.closest('.text-region')||document.getElementById('editable-region');
-      let font=starting;
-      if(frame){
-        const oval=frame.dataset.shape==='circle'||frame.dataset.shape==='ellipse';
-        const usableW=Math.max(42,frame.clientWidth*(oval?.72:1)-28);
-        const usableH=Math.max(40,frame.clientHeight*(oval?.72:1)-28);
-        for(let i=0;i<15;i++){
-          body.style.fontSize=font.toFixed(2)+'px';
-          if((body.scrollHeight<=usableH&&body.scrollWidth<=usableW)||font<=9)break;
-          font=Math.max(9,font*.85);
+      if(!frame)continue;
+      const oval=frame.dataset.shape==='circle'||frame.dataset.shape==='ellipse';
+      const roomW=Math.max(48,frame.clientWidth*(oval?.72:1)-20);
+      const roomH=Math.max(48,frame.clientHeight*(oval?.74:1)-18);
+      const fits=size=>{
+        body.style.fontSize=size.toFixed(2)+'px';
+        return body.scrollHeight<=roomH+2&&body.scrollWidth<=roomW+2;
+      };
+      const raw=frame.dataset.fontSize;
+      const manual=raw&&raw!=='auto'&&Number.isFinite(Number(raw))&&Number(raw)>=12;
+      if(manual){
+        const pixels=clamp(Number(raw),12,72);
+        frame.dataset.textOverflow=String(!fits(pixels));
+        continue;
+      }
+      let lo=lower,hi=upper;
+      const minFits=fits(lo);
+      if(minFits){
+        for(let i=0;i<9;i++){
+          const mid=(lo+hi)/2;
+          if(fits(mid))lo=mid;
+          else hi=mid;
         }
       }
-      body.style.fontSize=font.toFixed(2)+'px';
+      frame.dataset.textOverflow=String(!fits(lo));
     }
     cachedFitWidth=vw;cachedFitHeight=vh;measure();
   }

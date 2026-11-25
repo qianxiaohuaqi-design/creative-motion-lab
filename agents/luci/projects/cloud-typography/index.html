@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#85c5e5">
   <meta name="description" content="Cloud Typography — a letter from the sky, drifting into cloud and wind.">
   <title>Cloud Typography · 云中来信</title>
-  <link rel="stylesheet" href="./style.css?v=2.7">
-  <script src="./script.js?v=2.7" defer></script>
+  <link rel="stylesheet" href="./style.css?v=2.8">
+  <script src="./script.js?v=2.8" defer></script>
   <script src="./export.js?v=2.7" defer></script>
-  <script src="./layout.js?v=2.7" defer></script>
+  <script src="./layout.js?v=2.8" defer></script>
 </head>
 <body>
   <main class="sky" id="sky">
@@ -122,6 +122,12 @@
             <label for="layout-zone-text">当前模块文字 <span id="layout-text-count">0 / 1200</span></label>
             <textarea id="layout-zone-text" rows="2" maxlength="1200" spellcheck="false" placeholder="给这个模块单独输入文字"></textarea>
             <button id="layout-apply-text" type="button">应用到当前框</button>
+            <div class="layout-font-controls" role="group" aria-label="当前模块字号设置">
+              <label class="layout-font-auto"><input type="checkbox" id="layout-font-auto" checked> 自动字号</label>
+              <label for="layout-font-size">文字大小 <output id="layout-font-value">自动</output></label>
+              <input id="layout-font-size" type="range" min="12" max="72" step="1" value="32" disabled aria-label="当前文字框字体大小，单位像素">
+              <span id="layout-font-hint" class="layout-font-hint">取消自动后可以自由调节字号</span>
+            </div>
             <label for="layout-motion">漂移幅度 <output id="layout-motion-value">1.0×</output></label>
             <input id="layout-motion" type="range" min="0.3" max="2" step="0.1" value="1">
           </div>

@@ -1,4 +1,4 @@
-/* Cloud Typography v2.7 — independently editable text regions, shapes, transforms.
+/* Cloud Typography v2.8 — independently editable text regions, shapes, transforms.
  * All coordinates are normalized to the art stage. The animation engine owns
  * the glyph pool; this editor owns region geometry/content and selected state.
  */
@@ -15,6 +15,8 @@
   const pick=$('layout-zone-select'),shape=$('layout-shape'),styleInput=$('layout-style');
   const textarea=$('layout-zone-text'),textCount=$('layout-text-count');
   const motionInput=$('layout-motion'),motionValue=$('layout-motion-value');
+  const fontAuto=$('layout-font-auto'),fontInput=$('layout-font-size');
+  const fontValue=$('layout-font-value'),fontHint=$('layout-font-hint');
   const checks={top:$('layout-show-top'),bottom:$('layout-show-bottom'),brand:$('layout-show-brand')};
   const status=$('layout-status'),MAX_ZONES=6,MAX_GLYPHS=1500;
   const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -25,7 +27,7 @@
   const size=t=>gr(t).filter(c=>!/\s/.test(c)).length;
   const original=app.getRegions()[0].text;
   const defaultRegion=()=>({id:'zone-1',x:.10,y:.20,w:.80,h:.60,
-    shape:'rect',style:'none',motion:1,text:original});
+    shape:'rect',style:'none',motion:1,fontSize:null,text:original});
   const defaults=()=>({zones:[defaultRegion()],selected:'zone-1',
     decorations:{top:{visible:true,x:.5,y:.085},bottom:{visible:true,x:.5,y:.905},brand:true}});
   let state=defaults(),editing=false,drag=null,nextId=2;
@@ -53,7 +55,8 @@
     return {id,x:clamp(num(value?.x,.14),0,1-w),y:clamp(num(value?.y,.16),0,1-h),w,h,
       shape:['rect','circle','ellipse'].includes(value?.shape)?value.shape:'rect',
       style:['none','dashed','glass'].includes(value?.style)?value.style:'none',
-      motion:clamp(num(value?.motion,1),.3,2),text};
+      motion:clamp(num(value?.motion,1),.3,2),
+      fontSize:value?.fontSize==null||value.fontSize===''?null:clamp(num(value.fontSize,32),12,72),text};
   }
   function reconcilePrimaryText(){
     const live=app.getRegions();
@@ -111,6 +114,7 @@
     ensureNodes();
     for(const [i,z] of state.zones.entries()){
       const e=els.get(z.id);e.frame.dataset.style=z.style;e.frame.dataset.shape=z.shape;
+      e.frame.dataset.fontSize=z.fontSize==null?'auto':String(z.fontSize);
       e.frame.classList.toggle('selected',z.id===state.selected);
       e.frame.style.left=(z.x*100).toFixed(3)+'%';
       e.frame.style.top=(z.y*100).toFixed(3)+'%';
@@ -130,18 +134,34 @@
       const z=selected();
       textarea.value=z.text;shape.value=z.shape;styleInput.value=z.style;
       motionInput.value=String(z.motion);motionValue.textContent=z.motion.toFixed(1)+'×';
+      fontAuto.checked=z.fontSize===null;
+      fontInput.disabled=z.fontSize===null;
+      if(z.fontSize!=null)fontInput.value=String(z.fontSize);
+      fontValue.textContent=z.fontSize===null?'自动':z.fontSize+'px';
       textCount.textContent=gr(textarea.value).length+' / 1200';
     }
     buttons.remove.disabled=state.zones.length<=1;
     buttons.add.disabled=state.zones.length>=MAX_ZONES;
+    if(syncSelection)updateFontHint();
     status.textContent='共 '+state.zones.length+' 个文字框，已选文字框 '+
       (state.zones.indexOf(selected())+1)+' · 总字形 '+state.zones.reduce((n,z)=>n+size(z.text),0)+' / 1500';
+  }
+  function updateFontHint(){
+    const z=selected(),nodes=els.get(z.id);
+    if(!nodes)return;
+    const overflow=nodes.frame.dataset.textOverflow==='true';
+    fontHint.textContent=overflow?
+      '文字超出当前框，请缩小字号、减少重复倍数或扩大文字框':
+      (z.fontSize===null?'自动根据当前文字框调整大小':'手动字号，不会自动缩小');
+  }
+  function reflowFont(){
+    app.reflowLayout();updateFontHint();
   }
   function syncEngine(){
     const ok=app.setRegions(state.zones.map(z=>({id:z.id,text:z.text,
       element:els.get(z.id).textEl,motion:z.motion})));
     if(!ok){status.textContent='文字总量过多，无法应用；请缩短文本';return false;}
-    app.reflowLayout();return true;
+    reflowFont();return true;
   }
   function addBox(rectInput){
     if(state.zones.length>=MAX_ZONES){status.textContent='最多 6 个文字框';return false;}
@@ -186,7 +206,7 @@
     app.resetArtwork();sky.classList.toggle('layout-editing',editing);
     toolbar.hidden=!editing;toggle.setAttribute('aria-pressed',String(editing));
     toggle.textContent=editing?'✓ 完成排版':'▧ 排版模式';
-    render(true);requestAnimationFrame(()=>app.reflowLayout());
+    render(true);requestAnimationFrame(()=>reflowFont());
   }
   toggle.addEventListener('click',()=>edit(!editing));
   buttons.add.addEventListener('click',()=>addBox());
@@ -220,6 +240,24 @@
     const z=selected();z.shape=shape.value;roundCircle(z);render(true);app.reflowLayout();
   });
   styleInput.addEventListener('change',()=>{selected().style=styleInput.value;render();});
+  fontAuto.addEventListener('change',()=>{
+    const z=selected();
+    if(fontAuto.checked)z.fontSize=null;
+    else{
+      const rendered=parseFloat(getComputedStyle(els.get(z.id).textEl).fontSize);
+      z.fontSize=clamp(Math.round(Number.isFinite(rendered)?rendered:32),12,72);
+      fontInput.value=String(z.fontSize);
+    }
+    render(true);reflowFont();
+  });
+  fontInput.addEventListener('input',()=>{
+    const z=selected();
+    z.fontSize=clamp(num(fontInput.value,32),12,72);
+    fontAuto.checked=false;fontInput.disabled=false;
+    fontValue.textContent=z.fontSize+'px';
+    els.get(z.id).frame.dataset.fontSize=String(z.fontSize);
+    reflowFont();
+  });
   motionInput.addEventListener('input',()=>{
     motionValue.textContent=num(motionInput.value,1).toFixed(1)+'×';
   });
@@ -320,5 +358,6 @@
     apply(cfg?.layout||snapshot());return true;
   };
   app.getLayout=snapshot;app.setLayout=apply;app.toggleLayoutEditing=edit;
+  window.addEventListener('resize',()=>requestAnimationFrame(updateFontHint));
   render(true);syncEngine();
 })();

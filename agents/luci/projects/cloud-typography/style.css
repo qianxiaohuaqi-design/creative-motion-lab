@@ -406,3 +406,13 @@ button, input { font: inherit; }
   .layout-editor textarea{flex-basis:100%;max-width:none;}
   .layout-tools label{max-width:100%;}
 }
+
+/* v2.8 — per-region font sizing, manual override + readable auto-fit */
+.layout-font-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
+.layout-font-controls .layout-font-auto{font-weight:600;}
+.layout-font-controls input[type="checkbox"]{width:15px;height:15px;accent-color:#fff;}
+.layout-font-controls input[type="range"]{width:140px;accent-color:#fff;touch-action:pan-x;}
+.layout-font-controls input[type="range"]:disabled{opacity:.4;cursor:not-allowed;}
+.layout-font-hint{font-size:10px;line-height:1.4;color:rgba(255,255,255,.86);max-width:250px;}
+#layout-font-value{min-width:36px;display:inline-block;font-variant-numeric:tabular-nums;text-align:right;}
+@media(max-width:520px){.layout-font-controls{width:100%;gap:6px;}.layout-font-controls input[type="range"]{width:110px;}}
