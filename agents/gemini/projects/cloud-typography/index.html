@@ -12,16 +12,62 @@
     <!-- 主交互画布：负责晴空背景、远景流云、3D 云白字母、气流风痕与携信白鸽 -->
     <canvas id="cloudCanvas" aria-label="Cloud Letter interactive sky canvas"></canvas>
 
-    <!-- 顶部轻盈作品抬头与手势提示 -->
+    <!-- 顶部轻盈作品抬头、手势提示与天色/工具切换 -->
     <header class="sky-header">
-      <div class="title-block">
-        <span class="title-en">A LETTER FROM THE CLOUDS</span>
-        <h1 class="title-cn">云中来信</h1>
+      <div class="header-main">
+        <div class="title-block">
+          <span class="title-en">A LETTER FROM THE CLOUDS</span>
+          <h1 class="title-cn">云中来信</h1>
+        </div>
+        <div class="gesture-hint" id="gestureHint">
+          <span>单击字母 · 永久云散</span>
+          <span class="dot" aria-hidden="true">·</span>
+          <span>长按拖拽 · 白鸽携信掠风</span>
+        </div>
       </div>
-      <div class="gesture-hint" id="gestureHint">
-        <span>单击字母 · 永久云散</span>
-        <span class="dot" aria-hidden="true">·</span>
-        <span>长按拖拽 · 白鸽携信掠风</span>
+
+      <div class="sky-tools" aria-label="天色时刻与明信片工具">
+        <div class="theme-switcher" id="themeSwitcher" role="radiogroup" aria-label="天空时刻">
+          <button class="theme-chip is-active" type="button" data-theme="noon" role="radio" aria-checked="true" title="晴午 · Noon">
+            <span class="theme-swatch swatch-noon" aria-hidden="true"></span>
+            <span>晴午</span>
+          </button>
+          <button class="theme-chip" type="button" data-theme="dawn" role="radio" aria-checked="false" title="晨曦 · Dawn">
+            <span class="theme-swatch swatch-dawn" aria-hidden="true"></span>
+            <span>晨曦</span>
+          </button>
+          <button class="theme-chip" type="button" data-theme="sunset" role="radio" aria-checked="false" title="晚霞 · Sunset">
+            <span class="theme-swatch swatch-sunset" aria-hidden="true"></span>
+            <span>晚霞</span>
+          </button>
+          <button class="theme-chip" type="button" data-theme="dusk" role="radio" aria-checked="false" title="暮蓝 · Dusk">
+            <span class="theme-swatch swatch-dusk" aria-hidden="true"></span>
+            <span>暮蓝</span>
+          </button>
+        </div>
+
+        <div class="tool-icon-group">
+          <button class="icon-btn" id="soundBtn" type="button" aria-pressed="false" title="风声开关（默认静音）" aria-label="切换程序化风声">
+            <svg class="icon-svg icon-sound-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M11 5L6 9H3v6h3l5 4V5z"></path>
+              <line x1="16" y1="9" x2="21" y2="15"></line>
+              <line x1="21" y1="9" x2="16" y2="15"></line>
+            </svg>
+            <svg class="icon-svg icon-sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M11 5L6 9H3v6h3l5 4V5z"></path>
+              <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+              <path d="M18.5 6a8.5 8.5 0 0 1 0 12"></path>
+            </svg>
+          </button>
+
+          <button class="icon-btn save-btn" id="saveBtn" type="button" title="导出高清「云中明信片」PNG" aria-label="导出云中明信片 PNG">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H9l1.4-2h3.2L15 6h2.5A2.5 2.5 0 0 1 20 8.5v9A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5v-9z"></path>
+              <circle cx="12" cy="13" r="3.4"></circle>
+            </svg>
+            <span class="icon-btn-label">SAVE</span>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -54,11 +100,53 @@
         <input id="reachSlider" type="range" min="15" max="100" value="55" step="1" aria-label="REACH 白鸽气流影响范围" />
       </div>
 
-      <button class="reset-btn" id="resetBtn" type="button" title="重新展开信笺，恢复所有已消散与失序的字母">
-        <span class="btn-en">RESET</span>
-        <span class="btn-cn">重置</span>
-      </button>
+      <div class="dock-actions">
+        <button class="dock-btn write-btn" id="writeBtn" type="button" title="自定义写一封云中来信，并生成分享链接">
+          <span class="btn-en">WRITE</span>
+          <span class="btn-cn">写信</span>
+        </button>
+
+        <button class="reset-btn" id="resetBtn" type="button" title="重新展开信笺，恢复所有已消散与失序的字母">
+          <span class="btn-en">RESET</span>
+          <span class="btn-cn">重置</span>
+        </button>
+      </div>
     </aside>
+
+    <!-- 写信浮层：支持自定义中英文与换行、凝结切换与寄信链接生成 -->
+    <div class="write-modal" id="writeModal" hidden aria-hidden="true">
+      <div class="write-backdrop" id="writeBackdrop"></div>
+      <section class="write-card" role="dialog" aria-modal="true" aria-labelledby="writeModalTitle">
+        <header class="write-card-header">
+          <div class="write-card-title-group">
+            <span class="write-card-en">SEND A LETTER</span>
+            <h2 class="write-card-title" id="writeModalTitle">写一封云中来信</h2>
+          </div>
+          <button class="write-close-btn" id="closeWriteBtn" type="button" aria-label="关闭写信浮层">×</button>
+        </header>
+
+        <textarea
+          id="letterInput"
+          class="write-textarea"
+          maxlength="360"
+          rows="5"
+          placeholder="写下一段想寄往云端的话（支持中英文与换行）…"
+          aria-label="自定义云中来信正文"
+        ></textarea>
+
+        <div class="write-meta">
+          <span class="write-count" id="letterCount">0 / 360</span>
+          <button class="write-default-btn" id="restoreDefaultBtn" type="button">恢复默认英文来信</button>
+        </div>
+
+        <p class="write-feedback" id="writeFeedback" aria-live="polite"></p>
+
+        <footer class="write-actions">
+          <button class="modal-btn modal-btn-secondary" id="copyLinkBtn" type="button">复制寄信链接</button>
+          <button class="modal-btn modal-btn-primary" id="applyLetterBtn" type="button">化作云字</button>
+        </footer>
+      </section>
+    </div>
   </main>
 
   <script src="./script.js"></script>
